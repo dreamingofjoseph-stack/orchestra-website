@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Heart, Gift, ShoppingBag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useListBoosters } from "@workspace/api-client-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Boosters() {
+  const { data: boosters = [], isLoading } = useListBoosters();
+  
+  const sortedBoosters = [...boosters].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
   return (
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-4xl mx-auto">
@@ -15,36 +21,53 @@ export default function Boosters() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-primary text-primary-foreground p-8 rounded-2xl"
-          >
-            <Heart className="w-10 h-10 mb-6 text-accent" />
-            <h2 className="text-2xl font-serif font-bold mb-4">Make a Donation</h2>
-            <p className="mb-8 text-primary-foreground/80">
-              Your tax-deductible donation goes directly toward purchasing new sheet music, instrument repairs, bringing in guest clinicians, and student scholarships.
-            </p>
-            <Button variant="secondary" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              Donate via PayPal
-            </Button>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-card border border-border p-8 rounded-2xl"
-          >
-            <ShoppingBag className="w-10 h-10 mb-6 text-primary" />
-            <h2 className="text-2xl font-serif font-bold mb-4">Current Fundraiser</h2>
-            <p className="mb-8 text-muted-foreground">
-              <strong>Holiday Poinsettia Sale!</strong> Order beautiful plants for the holiday season while supporting the orchestra's spring trip to Chicago.
-            </p>
-            <Button variant="outline" className="w-full group">
-              Order Online <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </motion.div>
+          {isLoading ? (
+            Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="bg-card border border-border p-8 rounded-2xl flex flex-col gap-4">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-10 w-full mt-auto" />
+              </div>
+            ))
+          ) : sortedBoosters.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-muted-foreground">
+              No booster activities found.
+            </div>
+          ) : (
+            sortedBoosters.map((booster, index) => (
+              <motion.div 
+                key={booster.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={booster.type === "donation" ? "bg-primary text-primary-foreground p-8 rounded-2xl" : "bg-card border border-border p-8 rounded-2xl"}
+              >
+                {booster.imageUrl ? (
+                  <img src={booster.imageUrl} alt={booster.title} className="w-full h-32 object-cover rounded-lg mb-6" />
+                ) : (
+                  booster.type === "donation" ? 
+                    <Heart className="w-10 h-10 mb-6 text-accent" /> : 
+                    <ShoppingBag className="w-10 h-10 mb-6 text-primary" />
+                )}
+                
+                <h2 className="text-2xl font-serif font-bold mb-4">{booster.title}</h2>
+                <p className={`mb-8 ${booster.type === "donation" ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                  {booster.description}
+                </p>
+                
+                {booster.type === "donation" ? (
+                  <Button variant="secondary" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                    Donate
+                  </Button>
+                ) : (
+                  <Button variant="outline" className="w-full group">
+                    Learn More <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                )}
+              </motion.div>
+            ))
+          )}
         </div>
 
         <div className="bg-muted/30 border border-border p-8 md:p-12 rounded-2xl text-center">

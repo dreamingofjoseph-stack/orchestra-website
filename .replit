@@ -20,5 +20,14 @@ path = "scripts/post-merge.sh"
 timeoutMs = 20000
 
 [[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
 localPort = 19694
 externalPort = 80
+
+[userenv]
+
+[userenv.shared]
+ADMIN_PASSWORD = "NCHSORCHESTRAADMIN"

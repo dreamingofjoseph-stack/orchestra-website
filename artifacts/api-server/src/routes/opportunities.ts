@@ -1,0 +1,53 @@
+import { Router, type IRouter } from "express";
+import { eq } from "drizzle-orm";
+import { db, opportunitiesTable } from "@workspace/db";
+import { requireAdmin } from "./admin";
+
+const router: IRouter = Router();
+
+router.get("/opportunities", async (req, res): Promise<void> => {
+  const opportunities = await db.select().from(opportunitiesTable).orderBy(opportunitiesTable.createdAt);
+  res.json(opportunities);
+});
+
+router.post("/opportunities", requireAdmin, async (req, res): Promise<void> => {
+  const { title, description, deadline, link, imageUrl } = req.body;
+  if (!title || description == null) {
+    res.status(400).json({ error: "Missing required fields" });
+    return;
+  }
+  const [opp] = await db
+    .insert(opportunitiesTable)
+    .values({ title, description, deadline: deadline ?? null, link: link ?? null, imageUrl: imageUrl ?? null })
+    .returning();
+  res.status(201).json(opp);
+});
+
+router.patch("/opportunities/:id", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const { title, description, deadline, link, imageUrl } = req.body;
+  const updates: Record<string, unknown> = {};
+  if (title !== undefined) updates.title = title;
+  if (description !== undefined) updates.description = description;
+  if (deadline !== undefined) updates.deadline = deadline;
+  if (link !== undefined) updates.link = link;
+  if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+
+  const [opp] = await db.update(opportunitiesTable).set(updates).where(eq(opportunitiesTable.id, id)).returning();
+  if (!opp) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(opp);
+});
+
+router.delete("/opportunities/:id", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  const [opp] = await db.delete(opportunitiesTable).where(eq(opportunitiesTable.id, id)).returning();
+  if (!opp) { res.status(404).json({ error: "Not found" }); return; }
+  res.sendStatus(204);
+});
+
+export default router;

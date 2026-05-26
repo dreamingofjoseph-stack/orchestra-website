@@ -12,23 +12,29 @@ import Events from "@/pages/events";
 import Opportunities from "@/pages/opportunities";
 import Board from "@/pages/board";
 import Boosters from "@/pages/boosters";
+import Admin from "@/pages/admin";
 
 const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/concerts" component={Concerts} />
-        <Route path="/concert-programs" component={ConcertPrograms} />
-        <Route path="/events" component={Events} />
-        <Route path="/opportunities" component={Opportunities} />
-        <Route path="/board" component={Board} />
-        <Route path="/boosters" component={Boosters} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      <Route path="/admin" component={Admin} />
+      <Route>
+        <Layout>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/concerts" component={Concerts} />
+            <Route path="/concert-programs" component={ConcertPrograms} />
+            <Route path="/events" component={Events} />
+            <Route path="/opportunities" component={Opportunities} />
+            <Route path="/board" component={Board} />
+            <Route path="/boosters" component={Boosters} />
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 

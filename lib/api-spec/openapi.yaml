@@ -10,6 +10,20 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: concerts
+    description: Concert management
+  - name: programs
+    description: Concert program management
+  - name: events
+    description: Event management
+  - name: opportunities
+    description: Opportunity management
+  - name: board
+    description: Board member management
+  - name: boosters
+    description: Booster/fundraiser management
+  - name: admin
+    description: Admin authentication
 paths:
   /healthz:
     get:
@@ -24,6 +38,472 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLoginResult"
+        "401":
+          description: Invalid password
+
+  /concerts:
+    get:
+      operationId: listConcerts
+      tags: [concerts]
+      summary: List all concerts
+      responses:
+        "200":
+          description: List of concerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Concert"
+    post:
+      operationId: createConcert
+      tags: [concerts]
+      summary: Create a concert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConcertInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Concert"
+
+  /concerts/{id}:
+    patch:
+      operationId: updateConcert
+      tags: [concerts]
+      summary: Update a concert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConcertUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Concert"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteConcert
+      tags: [concerts]
+      summary: Delete a concert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /programs:
+    get:
+      operationId: listPrograms
+      tags: [programs]
+      summary: List all concert programs
+      responses:
+        "200":
+          description: List of programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Program"
+    post:
+      operationId: createProgram
+      tags: [programs]
+      summary: Create a concert program
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgramInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Program"
+
+  /programs/{id}:
+    patch:
+      operationId: updateProgram
+      tags: [programs]
+      summary: Update a concert program
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgramUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Program"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteProgram
+      tags: [programs]
+      summary: Delete a concert program
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List all events
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create an event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+  /events/{id}:
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /opportunities:
+    get:
+      operationId: listOpportunities
+      tags: [opportunities]
+      summary: List all opportunities
+      responses:
+        "200":
+          description: List of opportunities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Opportunity"
+    post:
+      operationId: createOpportunity
+      tags: [opportunities]
+      summary: Create an opportunity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpportunityInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Opportunity"
+
+  /opportunities/{id}:
+    patch:
+      operationId: updateOpportunity
+      tags: [opportunities]
+      summary: Update an opportunity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpportunityUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Opportunity"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteOpportunity
+      tags: [opportunities]
+      summary: Delete an opportunity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /board:
+    get:
+      operationId: listBoardMembers
+      tags: [board]
+      summary: List all board members
+      responses:
+        "200":
+          description: List of board members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BoardMember"
+    post:
+      operationId: createBoardMember
+      tags: [board]
+      summary: Create a board member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoardMemberInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoardMember"
+
+  /board/{id}:
+    patch:
+      operationId: updateBoardMember
+      tags: [board]
+      summary: Update a board member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoardMemberUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoardMember"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteBoardMember
+      tags: [board]
+      summary: Delete a board member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /boosters:
+    get:
+      operationId: listBoosters
+      tags: [boosters]
+      summary: List all booster items
+      responses:
+        "200":
+          description: List of booster items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booster"
+    post:
+      operationId: createBooster
+      tags: [boosters]
+      summary: Create a booster item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoosterInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booster"
+
+  /boosters/{id}:
+    patch:
+      operationId: updateBooster
+      tags: [boosters]
+      summary: Update a booster item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoosterUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booster"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteBooster
+      tags: [boosters]
+      summary: Delete a booster item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +514,354 @@ components:
       required:
         - status
 
+    AdminLoginInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+
+    AdminLoginResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+
+    Concert:
+      type: object
+      required: [id, title, date, time, venue, description, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        venue:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ConcertInput:
+      type: object
+      required: [title, date, time, venue, description, status]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          minLength: 1
+        time:
+          type: string
+          minLength: 1
+        venue:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        status:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+
+    ConcertUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        date:
+          type: string
+        time:
+          type: string
+        venue:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+
+    Program:
+      type: object
+      required: [id, title, date, description, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        date:
+          type: string
+        description:
+          type: string
+        fileUrl:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ProgramInput:
+      type: object
+      required: [title, date, description]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        fileUrl:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+
+    ProgramUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        date:
+          type: string
+        description:
+          type: string
+        fileUrl:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+
+    Event:
+      type: object
+      required: [id, title, date, time, description, category, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    EventInput:
+      type: object
+      required: [title, date, time, description, category]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          minLength: 1
+        time:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+
+    EventUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        date:
+          type: string
+        time:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+
+    Opportunity:
+      type: object
+      required: [id, title, description, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: ["string", "null"]
+        link:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    OpportunityInput:
+      type: object
+      required: [title, description]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        deadline:
+          type: ["string", "null"]
+        link:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+
+    OpportunityUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        deadline:
+          type: ["string", "null"]
+        link:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+
+    BoardMember:
+      type: object
+      required: [id, name, role, bio, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        bio:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    BoardMemberInput:
+      type: object
+      required: [name, role, bio, sortOrder]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        bio:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+
+    BoardMemberUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        bio:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+
+    Booster:
+      type: object
+      required: [id, title, description, type, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    BoosterInput:
+      type: object
+      required: [title, description, type, sortOrder]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        type:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+
+    BoosterUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        type:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
