@@ -15,7 +15,14 @@ export default function Events() {
     return () => window.removeEventListener("search-query" as any, handleSearch);
   }, []);
 
-  const filteredEvents = events.filter(e => 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const filteredEvents = events.filter(e => {
+    const eventDate = new Date(e.date);
+    if (isNaN(eventDate.getTime())) return true;
+    return eventDate >= today;
+  }).filter(e =>
     e.title.toLowerCase().includes(filter) || (e.category || "").toLowerCase().includes(filter)
   );
 
