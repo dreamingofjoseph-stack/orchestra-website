@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListPrograms } from "@workspace/api-client-react";
+import { useStaticPrograms } from "@/lib/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ConcertPrograms() {
   const [filter, setFilter] = useState("");
-  const { data: programs = [], isLoading } = useListPrograms();
+  const { data: programs = [], isLoading } = useStaticPrograms();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());
@@ -15,7 +15,7 @@ export default function ConcertPrograms() {
     return () => window.removeEventListener("search-query" as any, handleSearch);
   }, []);
 
-  const filteredPrograms = programs.filter(p => 
+  const filteredPrograms = (programs as any[]).filter((p: any) =>
     p.title.toLowerCase().includes(filter) || (p.description || "").toLowerCase().includes(filter)
   );
 
@@ -48,7 +48,7 @@ export default function ConcertPrograms() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPrograms.map((program, index) => (
+          {filteredPrograms.map((program: any, index: number) => (
             <motion.div
               key={program.id}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -63,17 +63,17 @@ export default function ConcertPrograms() {
                   <FileText className="w-6 h-6" />
                 </div>
               )}
-              
+
               <h3 className="text-xl font-serif font-bold mb-2 leading-tight">{program.title}</h3>
               <p className="text-muted-foreground text-sm font-medium mb-4">{program.date}</p>
-              
+
               {program.description && (
                 <p className="text-sm text-foreground/80 mb-8">{program.description}</p>
               )}
-              
+
               <div className="mt-auto pt-6 border-t border-border flex gap-3">
-                <Button 
-                  className="w-full bg-secondary hover:bg-secondary/90" 
+                <Button
+                  className="w-full bg-secondary hover:bg-secondary/90"
                   onClick={() => program.fileUrl && window.open(program.fileUrl, '_blank')}
                   disabled={!program.fileUrl}
                 >

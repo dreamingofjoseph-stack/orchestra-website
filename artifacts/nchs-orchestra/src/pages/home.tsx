@@ -1,17 +1,17 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Calendar, MapPin, Clock } from "lucide-react";
+import { ArrowRight, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListConcerts } from "@workspace/api-client-react";
+import { useStaticConcerts } from "@/lib/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
-  const { data: concerts = [], isLoading } = useListConcerts();
+  const { data: concerts = [], isLoading } = useStaticConcerts();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const upcomingConcerts = concerts
-    .filter(c => {
+    .filter((c: any) => {
       const d = new Date(c.date);
       return !isNaN(d.getTime()) && d >= today;
     })
@@ -86,7 +86,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {upcomingConcerts.map((concert, index) => {
+              {upcomingConcerts.map((concert: any, index: number) => {
                 const dateObj = new Date(concert.date);
                 const month = isNaN(dateObj.getTime()) ? "" : dateObj.toLocaleString("default", { month: "short" });
                 const day = isNaN(dateObj.getTime()) ? "" : dateObj.getDate();

@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Donna Fischer",
+    "role": "President",
+    "email": "doncaree55@gmail.com",
+    "sortOrder": 0,
+    "createdAt": "2026-05-26T23:13:34.062Z",
+    "updatedAt": "2026-05-26T23:13:34.062Z"
+  },
+  {
+    "id": 2,
+    "name": "Tina Erickson",
+    "role": "Secretary",
+    "email": "thisistina04@gmail.com",
+    "sortOrder": 1,
+    "createdAt": "2026-05-26T23:13:34.124Z",
+    "updatedAt": "2026-05-26T23:13:34.124Z"
+  },
+  {
+    "id": 3,
+    "name": "Susan Carroll",
+    "role": "Orchestra Representative",
+    "email": "susan@beshie.com",
+    "sortOrder": 2,
+    "createdAt": "2026-05-26T23:13:34.181Z",
+    "updatedAt": "2026-05-26T23:13:34.181Z"
+  }
+]

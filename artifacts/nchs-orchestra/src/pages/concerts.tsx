@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Clock, ArrowRight } from "lucide-react";
+import { Clock, MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { useListConcerts } from "@workspace/api-client-react";
+import { useStaticConcerts } from "@/lib/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Concerts() {
   const [filter, setFilter] = useState("");
-  const { data: concerts = [], isLoading } = useListConcerts();
+  const { data: concerts = [], isLoading } = useStaticConcerts();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());
@@ -16,7 +16,7 @@ export default function Concerts() {
     return () => window.removeEventListener("search-query" as any, handleSearch);
   }, []);
 
-  const filteredConcerts = concerts.filter(c => 
+  const filteredConcerts = (concerts as any[]).filter((c: any) =>
     c.title.toLowerCase().includes(filter) || (c.description || "").toLowerCase().includes(filter)
   );
 
@@ -47,13 +47,13 @@ export default function Concerts() {
               <p className="text-muted-foreground">No concerts found matching your search.</p>
             </div>
           ) : (
-            filteredConcerts.map((concert, index) => {
+            filteredConcerts.map((concert: any, index: number) => {
               const dateObj = new Date(concert.date);
               const month = isNaN(dateObj.getTime()) ? "" : dateObj.toLocaleString('default', { month: 'short' });
               const day = isNaN(dateObj.getTime()) ? "" : dateObj.getDate();
 
               return (
-                <motion.div 
+                <motion.div
                   key={concert.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -67,7 +67,7 @@ export default function Concerts() {
                       <span className="mt-2 text-xs font-medium text-muted-foreground bg-border px-2 py-0.5 rounded-full">Past</span>
                     )}
                   </div>
-                  
+
                   <div className="flex-grow">
                     {concert.imageUrl && (
                       <img src={concert.imageUrl} alt={concert.title} className="w-full h-48 object-cover rounded-lg mb-4" />
@@ -77,10 +77,8 @@ export default function Concerts() {
                       <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {concert.time}</span>
                       <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {concert.venue}</span>
                     </div>
-                    <p className="text-foreground/80 leading-relaxed mb-6">
-                      {concert.description}
-                    </p>
-                    
+                    <p className="text-foreground/80 leading-relaxed mb-6">{concert.description}</p>
+
                     {concert.status === "upcoming" ? (
                       <Button variant="outline" className="text-primary border-primary/20 hover:bg-primary/5">
                         Add to Calendar
@@ -92,7 +90,7 @@ export default function Concerts() {
                     )}
                   </div>
                 </motion.div>
-              )
+              );
             })
           )}
         </div>

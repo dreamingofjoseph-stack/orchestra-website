@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useListBoardMembers } from "@workspace/api-client-react";
+import { useStaticBoardMembers } from "@/lib/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Board() {
   const [filter, setFilter] = useState("");
-  const { data: members = [], isLoading } = useListBoardMembers();
+  const { data: members = [], isLoading } = useStaticBoardMembers();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());
@@ -13,9 +13,9 @@ export default function Board() {
     return () => window.removeEventListener("search-query" as any, handleSearch);
   }, []);
 
-  const sortedMembers = [...members].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  
-  const filtered = sortedMembers.filter(l => 
+  const sortedMembers = [...(members as any[])].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+  const filtered = sortedMembers.filter((l: any) =>
     l.name.toLowerCase().includes(filter) || (l.role || "").toLowerCase().includes(filter)
   );
 
@@ -43,7 +43,7 @@ export default function Board() {
             No board members found.
           </div>
         ) : (
-          filtered.map((leader, index) => (
+          filtered.map((leader: any, index: number) => (
             <motion.div
               key={leader.id}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -58,13 +58,11 @@ export default function Board() {
                   {leader.name.charAt(0)}
                 </div>
               )}
-              
+
               <h3 className="text-xl font-serif font-bold text-foreground mb-1">{leader.name}</h3>
               <span className="text-sm font-bold text-accent uppercase tracking-wider mb-4 block">{leader.role}</span>
               {leader.bio && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {leader.bio}
-                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{leader.bio}</p>
               )}
             </motion.div>
           ))

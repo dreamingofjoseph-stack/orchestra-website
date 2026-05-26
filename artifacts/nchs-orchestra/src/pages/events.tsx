@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalendarIcon, Clock, MapPin, Users } from "lucide-react";
+import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useListEvents } from "@workspace/api-client-react";
+import { useStaticEvents } from "@/lib/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Events() {
   const [filter, setFilter] = useState("");
-  const { data: events = [], isLoading } = useListEvents();
+  const { data: events = [], isLoading } = useStaticEvents();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());
@@ -18,16 +18,18 @@ export default function Events() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const filteredEvents = events.filter(e => {
-    const eventDate = new Date(e.date);
-    if (isNaN(eventDate.getTime())) return true;
-    return eventDate >= today;
-  }).filter(e =>
-    e.title.toLowerCase().includes(filter) || (e.category || "").toLowerCase().includes(filter)
-  );
+  const filteredEvents = (events as any[])
+    .filter((e: any) => {
+      const eventDate = new Date(e.date);
+      if (isNaN(eventDate.getTime())) return true;
+      return eventDate >= today;
+    })
+    .filter((e: any) =>
+      e.title.toLowerCase().includes(filter) || (e.category || "").toLowerCase().includes(filter)
+    );
 
   const getTypeColor = (type: string) => {
-    switch((type || "").toLowerCase()) {
+    switch ((type || "").toLowerCase()) {
       case 'audition': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       case 'masterclass': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'competition': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
@@ -42,7 +44,7 @@ export default function Events() {
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4">Department Events</h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Important dates, rehearsals, masterclasses, and auditions for NCHS Orchestra students. 
+            Important dates, rehearsals, masterclasses, and auditions for NCHS Orchestra students.
             For public performances, please see our Concerts page.
           </p>
         </div>
@@ -64,11 +66,11 @@ export default function Events() {
               ))
             ) : filteredEvents.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground">
-                No events found matching your search.
+                No upcoming events at this time.
               </div>
             ) : (
-              filteredEvents.map((event, index) => (
-                <motion.div 
+              filteredEvents.map((event: any, index: number) => (
+                <motion.div
                   key={event.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -78,7 +80,7 @@ export default function Events() {
                   {event.imageUrl && (
                     <img src={event.imageUrl} alt={event.title} className="w-24 h-24 object-cover rounded-lg shrink-0" />
                   )}
-                  
+
                   <div className="shrink-0 w-full md:w-48">
                     <div className="font-bold text-foreground flex items-center gap-2 mb-1">
                       <CalendarIcon className="w-4 h-4 text-primary" /> {event.date}
@@ -97,7 +99,6 @@ export default function Events() {
                         </Badge>
                       )}
                     </div>
-                    
                     {event.description && (
                       <p className="text-sm text-foreground/80 mt-2 mb-3">{event.description}</p>
                     )}

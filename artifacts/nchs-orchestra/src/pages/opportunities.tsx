@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Award, Music, BookOpen, ChevronRight, Link as LinkIcon } from "lucide-react";
+import { Award, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListOpportunities } from "@workspace/api-client-react";
+import { useStaticOpportunities } from "@/lib/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Opportunities() {
   const [filter, setFilter] = useState("");
-  const { data: opportunities = [], isLoading } = useListOpportunities();
+  const { data: opportunities = [], isLoading } = useStaticOpportunities();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());
@@ -15,7 +15,7 @@ export default function Opportunities() {
     return () => window.removeEventListener("search-query" as any, handleSearch);
   }, []);
 
-  const filtered = opportunities.filter(o => 
+  const filtered = (opportunities as any[]).filter((o: any) =>
     o.title.toLowerCase().includes(filter) || (o.description || "").toLowerCase().includes(filter)
   );
 
@@ -45,7 +45,7 @@ export default function Opportunities() {
             No opportunities found.
           </div>
         ) : (
-          filtered.map((opp, index) => (
+          filtered.map((opp: any, index: number) => (
             <motion.div
               key={opp.id}
               initial={{ opacity: 0, y: 20 }}
@@ -60,18 +60,16 @@ export default function Opportunities() {
                   <Award className="w-8 h-8" />
                 </div>
               )}
-              
+
               <h3 className="text-xl font-serif font-bold mb-4">{opp.title}</h3>
-              <p className="text-muted-foreground text-sm mb-8 flex-grow leading-relaxed">
-                {opp.description}
-              </p>
-              
+              <p className="text-muted-foreground text-sm mb-8 flex-grow leading-relaxed">{opp.description}</p>
+
               <div className="w-full border-t border-border pt-6">
                 {opp.deadline && (
                   <p className="text-xs font-bold text-accent uppercase tracking-wider mb-4">{opp.deadline}</p>
                 )}
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors"
                   onClick={() => opp.link && window.open(opp.link, '_blank')}
                   disabled={!opp.link}

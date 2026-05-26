@@ -1,0 +1,8 @@
+{
+  "buildCommand": "pnpm install && pnpm --filter @workspace/nchs-orchestra run build",
+  "outputDirectory": "artifacts/nchs-orchestra/dist/public",
+  "installCommand": "pnpm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

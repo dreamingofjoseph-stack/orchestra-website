@@ -1,15 +1,15 @@
 import { motion } from "framer-motion";
 import { Heart, Mail, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListBoosters, useListBoosterOfficers } from "@workspace/api-client-react";
+import { useStaticBoosters, useStaticBoosterOfficers } from "@/lib/useData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Boosters() {
-  const { data: boosters = [], isLoading: boostersLoading } = useListBoosters();
-  const { data: officers = [], isLoading: officersLoading } = useListBoosterOfficers();
+  const { data: boosters = [], isLoading: boostersLoading } = useStaticBoosters();
+  const { data: officers = [], isLoading: officersLoading } = useStaticBoosterOfficers();
 
-  const sortedBoosters = [...boosters].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  const sortedOfficers = [...officers].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  const sortedBoosters = [...(boosters as any[])].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  const sortedOfficers = [...(officers as any[])].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
   return (
     <div className="container mx-auto px-6 py-12">
@@ -32,7 +32,6 @@ export default function Boosters() {
             asChild
             size="lg"
             className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
-            data-testid="button-donate"
           >
             <a
               href="https://www.zeffy.com/en-US/donation-form/orchestra-boosters-fundraiser"
@@ -45,7 +44,7 @@ export default function Boosters() {
           </Button>
         </div>
 
-        {/* Additional booster activities from admin */}
+        {/* Additional booster activities */}
         {(boostersLoading || sortedBoosters.length > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             {boostersLoading ? (
@@ -57,14 +56,13 @@ export default function Boosters() {
                 </div>
               ))
             ) : (
-              sortedBoosters.map((booster, index) => (
+              sortedBoosters.map((booster: any, index: number) => (
                 <motion.div
                   key={booster.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   className="bg-card border border-border p-8 rounded-2xl"
-                  data-testid={`card-booster-${booster.id}`}
                 >
                   {booster.imageUrl && (
                     <img src={booster.imageUrl} alt={booster.title} className="w-full h-32 object-cover rounded-lg mb-6" />
@@ -95,22 +93,18 @@ export default function Boosters() {
             <p className="text-center text-muted-foreground">No officers listed yet.</p>
           ) : (
             <div className="divide-y divide-border">
-              {sortedOfficers.map((officer, index) => (
+              {sortedOfficers.map((officer: any, index: number) => (
                 <motion.div
                   key={officer.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.08 }}
                   className="py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-                  data-testid={`row-officer-${officer.id}`}
                 >
-                  <div>
-                    <p className="font-semibold text-foreground">{officer.name}, {officer.role}</p>
-                  </div>
+                  <p className="font-semibold text-foreground">{officer.name}, {officer.role}</p>
                   <a
                     href={`mailto:${officer.email}`}
                     className="flex items-center gap-2 text-primary hover:underline text-sm font-medium"
-                    data-testid={`link-officer-email-${officer.id}`}
                   >
                     <Mail className="w-4 h-4" />
                     {officer.email}

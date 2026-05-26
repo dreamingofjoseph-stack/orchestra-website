@@ -1,51 +1,67 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, boosterOfficersTable } from "@workspace/db";
+import { readStore, writeStore, nextId } from "../lib/jsonStore";
 import { requireAdmin } from "./admin";
+
+interface BoosterOfficer {
+  id: number;
+  name: string;
+  role: string;
+  email: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const router: IRouter = Router();
 
-router.get("/booster-officers", async (req, res): Promise<void> => {
-  const officers = await db.select().from(boosterOfficersTable).orderBy(boosterOfficersTable.sortOrder);
+router.get("/booster-officers", (_req, res): void => {
+  const officers = readStore<BoosterOfficer>("booster-officers");
+  officers.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   res.json(officers);
 });
 
-router.post("/booster-officers", requireAdmin, async (req, res): Promise<void> => {
+router.post("/booster-officers", requireAdmin, (req, res): void => {
   const { name, role, email, sortOrder } = req.body;
   if (!name || !role || !email) {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
-  const [officer] = await db
-    .insert(boosterOfficersTable)
-    .values({ name, role, email, sortOrder: sortOrder ?? 0 })
-    .returning();
+  const officers = readStore<BoosterOfficer>("booster-officers");
+  const now = new Date().toISOString();
+  const officer: BoosterOfficer = {
+    id: nextId(officers), name, role, email,
+    sortOrder: sortOrder ?? 0, createdAt: now, updatedAt: now,
+  };
+  officers.push(officer);
+  writeStore("booster-officers", officers);
   res.status(201).json(officer);
 });
 
-router.patch("/booster-officers/:id", requireAdmin, async (req, res): Promise<void> => {
-  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const id = parseInt(raw, 10);
+router.patch("/booster-officers/:id", requireAdmin, (req, res): void => {
+  const id = parseInt(req.params.id as string, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
-
+  const officers = readStore<BoosterOfficer>("booster-officers");
+  const idx = officers.findIndex((o) => o.id === id);
+  if (idx === -1) { res.status(404).json({ error: "Not found" }); return; }
   const { name, role, email, sortOrder } = req.body;
-  const updates: Record<string, unknown> = {};
-  if (name !== undefined) updates.name = name;
-  if (role !== undefined) updates.role = role;
-  if (email !== undefined) updates.email = email;
-  if (sortOrder !== undefined) updates.sortOrder = sortOrder;
-
-  const [officer] = await db.update(boosterOfficersTable).set(updates).where(eq(boosterOfficersTable.id, id)).returning();
-  if (!officer) { res.status(404).json({ error: "Not found" }); return; }
+  const officer = officers[idx];
+  if (name !== undefined) officer.name = name;
+  if (role !== undefined) officer.role = role;
+  if (email !== undefined) officer.email = email;
+  if (sortOrder !== undefined) officer.sortOrder = sortOrder;
+  officer.updatedAt = new Date().toISOString();
+  writeStore("booster-officers", officers);
   res.json(officer);
 });
 
-router.delete("/booster-officers/:id", requireAdmin, async (req, res): Promise<void> => {
-  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const id = parseInt(raw, 10);
+router.delete("/booster-officers/:id", requireAdmin, (req, res): void => {
+  const id = parseInt(req.params.id as string, 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [officer] = await db.delete(boosterOfficersTable).where(eq(boosterOfficersTable.id, id)).returning();
-  if (!officer) { res.status(404).json({ error: "Not found" }); return; }
+  const officers = readStore<BoosterOfficer>("booster-officers");
+  const idx = officers.findIndex((o) => o.id === id);
+  if (idx === -1) { res.status(404).json({ error: "Not found" }); return; }
+  officers.splice(idx, 1);
+  writeStore("booster-officers", officers);
   res.sendStatus(204);
 });
 
