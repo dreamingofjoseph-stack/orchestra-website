@@ -426,6 +426,75 @@ export const CreateBoosterBody = zod.object({
 
 
 /**
+ * @summary List all booster officers
+ */
+export const ListBoosterOfficersResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "email": zod.string(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListBoosterOfficersResponse = zod.array(ListBoosterOfficersResponseItem)
+
+
+/**
+ * @summary Create a booster officer
+ */
+
+
+
+
+
+export const CreateBoosterOfficerBody = zod.object({
+  "name": zod.string().min(1),
+  "role": zod.string().min(1),
+  "email": zod.string().min(1),
+  "sortOrder": zod.number()
+})
+
+
+/**
+ * @summary Update a booster officer
+ */
+export const UpdateBoosterOfficerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+
+export const UpdateBoosterOfficerBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "role": zod.string().min(1).optional(),
+  "email": zod.string().min(1).optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const UpdateBoosterOfficerResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "email": zod.string(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a booster officer
+ */
+export const DeleteBoosterOfficerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary Update a booster item
  */
 export const UpdateBoosterParams = zod.object({

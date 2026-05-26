@@ -225,6 +225,36 @@ export interface BoosterInput {
   sortOrder: number;
 }
 
+export interface BoosterOfficer {
+  id: number;
+  name: string;
+  role: string;
+  email: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BoosterOfficerInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  role: string;
+  /** @minLength 1 */
+  email: string;
+  sortOrder: number;
+}
+
+export interface BoosterOfficerUpdate {
+  /** @minLength 1 */
+  name?: string;
+  /** @minLength 1 */
+  role?: string;
+  /** @minLength 1 */
+  email?: string;
+  sortOrder?: number;
+}
+
 export interface BoosterUpdate {
   /** @minLength 1 */
   title?: string;

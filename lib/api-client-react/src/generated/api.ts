@@ -27,6 +27,9 @@ import type {
   BoardMemberUpdate,
   Booster,
   BoosterInput,
+  BoosterOfficer,
+  BoosterOfficerInput,
+  BoosterOfficerUpdate,
   BoosterUpdate,
   Concert,
   ConcertInput,
@@ -1800,6 +1803,296 @@ export const useCreateBooster = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateBoosterMutationOptions(options));
+    }
+
+export const getListBoosterOfficersUrl = () => {
+
+
+
+
+  return `/api/booster-officers`
+}
+
+/**
+ * @summary List all booster officers
+ */
+export const listBoosterOfficers = async ( options?: RequestInit): Promise<BoosterOfficer[]> => {
+
+  return customFetch<BoosterOfficer[]>(getListBoosterOfficersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBoosterOfficersQueryKey = () => {
+    return [
+    `/api/booster-officers`
+    ] as const;
+    }
+
+
+export const getListBoosterOfficersQueryOptions = <TData = Awaited<ReturnType<typeof listBoosterOfficers>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBoosterOfficers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBoosterOfficersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBoosterOfficers>>> = ({ signal }) => listBoosterOfficers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBoosterOfficers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBoosterOfficersQueryResult = NonNullable<Awaited<ReturnType<typeof listBoosterOfficers>>>
+export type ListBoosterOfficersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all booster officers
+ */
+
+export function useListBoosterOfficers<TData = Awaited<ReturnType<typeof listBoosterOfficers>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBoosterOfficers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBoosterOfficersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateBoosterOfficerUrl = () => {
+
+
+
+
+  return `/api/booster-officers`
+}
+
+/**
+ * @summary Create a booster officer
+ */
+export const createBoosterOfficer = async (boosterOfficerInput: BoosterOfficerInput, options?: RequestInit): Promise<BoosterOfficer> => {
+
+  return customFetch<BoosterOfficer>(getCreateBoosterOfficerUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      boosterOfficerInput,)
+  }
+);}
+
+
+
+
+export const getCreateBoosterOfficerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBoosterOfficer>>, TError,{data: BodyType<BoosterOfficerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBoosterOfficer>>, TError,{data: BodyType<BoosterOfficerInput>}, TContext> => {
+
+const mutationKey = ['createBoosterOfficer'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBoosterOfficer>>, {data: BodyType<BoosterOfficerInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBoosterOfficer(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBoosterOfficerMutationResult = NonNullable<Awaited<ReturnType<typeof createBoosterOfficer>>>
+    export type CreateBoosterOfficerMutationBody = BodyType<BoosterOfficerInput>
+    export type CreateBoosterOfficerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a booster officer
+ */
+export const useCreateBoosterOfficer = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBoosterOfficer>>, TError,{data: BodyType<BoosterOfficerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBoosterOfficer>>,
+        TError,
+        {data: BodyType<BoosterOfficerInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBoosterOfficerMutationOptions(options));
+    }
+
+export const getUpdateBoosterOfficerUrl = (id: number,) => {
+
+
+
+
+  return `/api/booster-officers/${id}`
+}
+
+/**
+ * @summary Update a booster officer
+ */
+export const updateBoosterOfficer = async (id: number,
+    boosterOfficerUpdate: BoosterOfficerUpdate, options?: RequestInit): Promise<BoosterOfficer> => {
+
+  return customFetch<BoosterOfficer>(getUpdateBoosterOfficerUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      boosterOfficerUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateBoosterOfficerMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBoosterOfficer>>, TError,{id: number;data: BodyType<BoosterOfficerUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBoosterOfficer>>, TError,{id: number;data: BodyType<BoosterOfficerUpdate>}, TContext> => {
+
+const mutationKey = ['updateBoosterOfficer'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBoosterOfficer>>, {id: number;data: BodyType<BoosterOfficerUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateBoosterOfficer(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBoosterOfficerMutationResult = NonNullable<Awaited<ReturnType<typeof updateBoosterOfficer>>>
+    export type UpdateBoosterOfficerMutationBody = BodyType<BoosterOfficerUpdate>
+    export type UpdateBoosterOfficerMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a booster officer
+ */
+export const useUpdateBoosterOfficer = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBoosterOfficer>>, TError,{id: number;data: BodyType<BoosterOfficerUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateBoosterOfficer>>,
+        TError,
+        {id: number;data: BodyType<BoosterOfficerUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateBoosterOfficerMutationOptions(options));
+    }
+
+export const getDeleteBoosterOfficerUrl = (id: number,) => {
+
+
+
+
+  return `/api/booster-officers/${id}`
+}
+
+/**
+ * @summary Delete a booster officer
+ */
+export const deleteBoosterOfficer = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteBoosterOfficerUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteBoosterOfficerMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBoosterOfficer>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBoosterOfficer>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteBoosterOfficer'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBoosterOfficer>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteBoosterOfficer(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBoosterOfficerMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBoosterOfficer>>>
+
+    export type DeleteBoosterOfficerMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a booster officer
+ */
+export const useDeleteBoosterOfficer = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBoosterOfficer>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBoosterOfficer>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteBoosterOfficerMutationOptions(options));
     }
 
 export const getUpdateBoosterUrl = (id: number,) => {

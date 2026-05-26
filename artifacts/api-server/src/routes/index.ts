@@ -7,6 +7,7 @@ import eventsRouter from "./events";
 import opportunitiesRouter from "./opportunities";
 import boardRouter from "./board";
 import boostersRouter from "./boosters";
+import boosterOfficersRouter from "./boosterOfficers";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(eventsRouter);
 router.use(opportunitiesRouter);
 router.use(boardRouter);
 router.use(boostersRouter);
+router.use(boosterOfficersRouter);
 
 export default router;

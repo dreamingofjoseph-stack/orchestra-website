@@ -6,7 +6,8 @@ import {
   useListEvents, getListEventsQueryKey,
   useListOpportunities, getListOpportunitiesQueryKey,
   useListBoardMembers, getListBoardMembersQueryKey,
-  useListBoosters, getListBoostersQueryKey
+  useListBoosters, getListBoostersQueryKey,
+  useListBoosterOfficers, getListBoosterOfficersQueryKey
 } from "@workspace/api-client-react";
 import { adminFetch } from "@/lib/adminFetch";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,7 @@ export default function Admin() {
             <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
             <TabsTrigger value="board">Board Members</TabsTrigger>
             <TabsTrigger value="boosters">Boosters</TabsTrigger>
+            <TabsTrigger value="officers">Booster Officers</TabsTrigger>
           </TabsList>
 
           <TabsContent value="concerts"><ConcertsAdmin /></TabsContent>
@@ -98,6 +100,7 @@ export default function Admin() {
           <TabsContent value="opportunities"><OpportunitiesAdmin /></TabsContent>
           <TabsContent value="board"><BoardAdmin /></TabsContent>
           <TabsContent value="boosters"><BoostersAdmin /></TabsContent>
+          <TabsContent value="officers"><BoosterOfficersAdmin /></TabsContent>
         </Tabs>
       </main>
     </div>
@@ -607,6 +610,100 @@ function BoardAdmin() {
             <div>
               <h3 className="font-bold">{item.name}</h3>
               <p className="text-sm text-muted-foreground">{item.role}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => handleOpenEdit(item)}>Edit</Button>
+              <Button variant="destructive" onClick={() => handleDelete(item.id)}>Delete</Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BoosterOfficersAdmin() {
+  const { data: items = [] } = useListBoosterOfficers();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const [formData, setFormData] = useState({ name: "", role: "", email: "", sortOrder: 0 });
+
+  const resetForm = () => {
+    setFormData({ name: "", role: "", email: "", sortOrder: 0 });
+    setEditingId(null);
+  };
+
+  const handleOpenEdit = (item: any) => {
+    setFormData({ name: item.name, role: item.role, email: item.email, sortOrder: item.sortOrder ?? 0 });
+    setEditingId(item.id);
+    setOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = { ...formData, sortOrder: Number(formData.sortOrder) };
+    if (editingId) {
+      await adminFetch(`/api/booster-officers/${editingId}`, { method: "PATCH", body: JSON.stringify(payload) });
+    } else {
+      await adminFetch("/api/booster-officers", { method: "POST", body: JSON.stringify(payload) });
+    }
+    queryClient.invalidateQueries({ queryKey: getListBoosterOfficersQueryKey() });
+    setOpen(false);
+    resetForm();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Remove this officer?")) {
+      await adminFetch(`/api/booster-officers/${id}`, { method: "DELETE" });
+      queryClient.invalidateQueries({ queryKey: getListBoosterOfficersQueryKey() });
+    }
+  };
+
+  const sorted = [...items].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Manage Booster Officers</h2>
+        <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) resetForm(); }}>
+          <DialogTrigger asChild><Button>Add Officer</Button></DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingId ? "Edit" : "Add"} Officer</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label>Role / Title</Label>
+                <Input required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label>Sort Order</Label>
+                <Input type="number" value={formData.sortOrder} onChange={e => setFormData({...formData, sortOrder: Number(e.target.value)})} />
+              </div>
+              <Button type="submit" className="w-full">Save</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="border rounded-lg bg-card">
+        {sorted.length === 0 ? (
+          <p className="p-6 text-center text-muted-foreground">No officers yet.</p>
+        ) : sorted.map(item => (
+          <div key={item.id} className="p-4 border-b last:border-0 flex items-center justify-between">
+            <div>
+              <p className="font-bold">{item.name} — {item.role}</p>
+              <p className="text-sm text-muted-foreground">{item.email}</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => handleOpenEdit(item)}>Edit</Button>

@@ -24,6 +24,8 @@ tags:
     description: Booster/fundraiser management
   - name: admin
     description: Admin authentication
+  - name: boosterOfficers
+    description: Booster officer management
 paths:
   /healthz:
     get:
@@ -462,6 +464,80 @@ paths:
               schema:
                 $ref: "#/components/schemas/Booster"
 
+  /booster-officers:
+    get:
+      operationId: listBoosterOfficers
+      tags: [boosterOfficers]
+      summary: List all booster officers
+      responses:
+        "200":
+          description: List of booster officers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BoosterOfficer"
+    post:
+      operationId: createBoosterOfficer
+      tags: [boosterOfficers]
+      summary: Create a booster officer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoosterOfficerInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoosterOfficer"
+
+  /booster-officers/{id}:
+    patch:
+      operationId: updateBoosterOfficer
+      tags: [boosterOfficers]
+      summary: Update a booster officer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoosterOfficerUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoosterOfficer"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteBoosterOfficer
+      tags: [boosterOfficers]
+      summary: Delete a booster officer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
   /boosters/{id}:
     patch:
       operationId: updateBooster
@@ -848,6 +924,56 @@ components:
           type: string
         imageUrl:
           type: ["string", "null"]
+        sortOrder:
+          type: integer
+
+    BoosterOfficer:
+      type: object
+      required: [id, name, role, email, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        email:
+          type: string
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    BoosterOfficerInput:
+      type: object
+      required: [name, role, email, sortOrder]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          minLength: 1
+        sortOrder:
+          type: integer
+
+    BoosterOfficerUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          minLength: 1
         sortOrder:
           type: integer
 
