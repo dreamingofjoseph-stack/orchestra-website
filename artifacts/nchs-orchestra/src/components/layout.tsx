@@ -55,9 +55,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="font-serif font-bold text-lg leading-tight tracking-wide">
                 NCHS Orchestra
               </span>
-              <span className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
-                Excellence in Music
-              </span>
             </div>
           </Link>
 
@@ -84,11 +81,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem asChild>
                   <Link href="/board" className="w-full cursor-pointer">
                     Orchestra Board & Leaders
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/boosters" className="w-full cursor-pointer">
-                    Boosters / Fundraisers
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -137,10 +129,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
               <span className="font-serif font-bold text-xl">NCHS Orchestra</span>
             </div>
-            <p className="text-secondary-foreground/70 max-w-sm">
-              Fostering a tradition of musical excellence, artistry, and community
-              for high school musicians.
-            </p>
           </div>
           <div>
             <h4 className="font-bold mb-4 font-serif text-accent">Quick Links</h4>
@@ -148,7 +136,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <li><Link href="/concerts" className="hover:text-white transition-colors">Upcoming Concerts</Link></li>
               <li><Link href="/events" className="hover:text-white transition-colors">Calendar</Link></li>
               <li><Link href="/opportunities" className="hover:text-white transition-colors">Student Opportunities</Link></li>
-              <li><Link href="/boosters" className="hover:text-white transition-colors">Support Us</Link></li>
             </ul>
           </div>
           <div>
