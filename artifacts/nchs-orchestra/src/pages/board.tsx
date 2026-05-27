@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useStaticBoardMembers } from "@/lib/useData";
+import { useListBoardMembers } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Board() {
   const [filter, setFilter] = useState("");
-  const { data: members = [], isLoading } = useStaticBoardMembers();
+  const { data: members = [], isLoading } = useListBoardMembers();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());

@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStaticPrograms } from "@/lib/useData";
+import { useListPrograms } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ConcertPrograms() {
   const [filter, setFilter] = useState("");
-  const { data: programs = [], isLoading } = useStaticPrograms();
+  const { data: programs = [], isLoading } = useListPrograms();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());

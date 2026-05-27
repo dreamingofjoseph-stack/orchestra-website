@@ -2,11 +2,11 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStaticConcerts } from "@/lib/useData";
+import { useListConcerts } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
-  const { data: concerts = [], isLoading } = useStaticConcerts();
+  const { data: concerts = [], isLoading } = useListConcerts();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

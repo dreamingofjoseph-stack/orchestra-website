@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Award, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStaticOpportunities } from "@/lib/useData";
+import { useListOpportunities } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Opportunities() {
   const [filter, setFilter] = useState("");
-  const { data: opportunities = [], isLoading } = useStaticOpportunities();
+  const { data: opportunities = [], isLoading } = useListOpportunities();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());

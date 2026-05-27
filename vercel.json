@@ -3,6 +3,6 @@
   "outputDirectory": "artifacts/nchs-orchestra/dist/public",
   "installCommand": "pnpm install",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

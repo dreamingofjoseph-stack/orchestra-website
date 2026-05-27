@@ -5,7 +5,7 @@ A public-facing multi-page school orchestra website with a CMS admin panel for m
 ## Run & Operate
 
 - `pnpm --filter @workspace/nchs-orchestra run dev` — run the frontend (Vite dev server)
-- `pnpm --filter @workspace/api-server run dev` — run the local admin API server (JSON file–based, no database needed)
+- `pnpm --filter @workspace/api-server run dev` — run the local admin API server (Express, JSON file–based)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -15,37 +15,41 @@ A public-facing multi-page school orchestra website with a CMS admin panel for m
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - Frontend: React + Vite (artifacts/nchs-orchestra)
 - Local admin API: Express 5, reads/writes JSON files (no database)
+- Production API: Vercel serverless functions in `api/` using `@neondatabase/serverless` (raw SQL)
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
 - `artifacts/nchs-orchestra/` — public-facing React + Vite site
-- `artifacts/nchs-orchestra/public/data/` — **source-of-truth JSON data files** (concerts, events, programs, etc.)
-- `artifacts/api-server/` — local-only admin API server (reads/writes the JSON files above)
+- `artifacts/api-server/` — local-only Express API server (reads/writes JSON files)
+- `api/` — Vercel serverless functions (production, uses Neon PostgreSQL)
+- `api/_db.ts` — shared `getSql()` / `camel()` / `nullish()` helpers for serverless functions
+- `api/_auth.ts` — shared `setCors()` / `requireAdmin()` helpers
 - `lib/api-spec/openapi.yaml` — OpenAPI contract (source of truth for API shape)
-- `lib/api-client-react/` — generated React Query hooks (used by admin panel)
+- `lib/api-client-react/` — generated React Query hooks (used by all pages + admin panel)
 - `lib/api-zod/` — generated Zod schemas
+- `lib/db/` — Drizzle schema + `drizzle-kit push` for creating Neon tables
 - `vercel.json` — Vercel deployment config (workspace root)
 
 ## Architecture decisions
 
-- **No database required.** All data lives in `artifacts/nchs-orchestra/public/data/*.json` files committed to the repo. The public site reads from these static files directly via `fetch()` — no backend needed on Vercel.
-- **Public site = static.** Pages use `src/lib/useData.ts` hooks (React Query + `fetch('/data/*.json')`), not the generated API client. Data URLs use `import.meta.env.BASE_URL` as a prefix so they work both locally (non-root base path) and on Vercel (root).
-- **Admin is local-only.** The Express API server runs locally (no DB, just reads/writes the JSON files). After editing content via `/admin`, commit the updated JSON files and push — Vercel auto-redeploys. Admin password: `NCHSORCHESTRAADMIN`.
-- **Vercel deployment:** `vercel.json` at the repo root points to the Vite build output (`artifacts/nchs-orchestra/dist/public`). All routes rewrite to `index.html` for client-side routing.
+- **Dual API layer.** Locally, `artifacts/api-server` (Express, JSON files) handles all `/api/*` requests via the Replit proxy. On Vercel, `api/` serverless functions handle those same routes using Neon PostgreSQL.
+- **Public site uses API hooks.** All public pages use `useListXxx` hooks from `@workspace/api-client-react`, which call `/api/*`. Works both locally (hits Express) and on Vercel (hits serverless functions).
+- **Admin is a slide-in drawer.** Accessible via More → Edit Site in the nav. Uses the same API hooks with `X-Admin-Key` header. Password stored in `localStorage` after login.
+- **Vercel deployment:** `vercel.json` at the repo root points to the Vite build output. The `/((?!api/).*)` rewrite sends all non-API routes to `index.html` for client-side routing.
 - **BASE_PATH aware.** `vite.config.ts` reads `BASE_PATH` env var (defaults to `/`) so the same build works in Replit (sub-path) and on Vercel (root).
 
 ## Product
 
-- **Home** — hero + upcoming concerts pulled from JSON
+- **Home** — hero + upcoming concerts pulled from API
 - **Concerts** — full concert listings with date/venue/status
 - **Concert Programs** — digital program booklet archive
-- **Events** — upcoming department events (past events auto-hidden)
+- **Events** — upcoming department events
 - **Opportunities** — student auditions, competitions, special ensembles
 - **Orchestra Board & Leaders** — board member cards
 - **Boosters/Fundraisers** — donation link (Zeffy) + booster officers contact list
-- **Admin panel** (`/admin`) — password-gated CMS for all content types
+- **Admin panel** (More → Edit Site) — password-gated CMS for all content types
 
 ## User preferences
 
@@ -53,11 +57,21 @@ A public-facing multi-page school orchestra website with a CMS admin panel for m
 - Admin password: `NCHSORCHESTRAADMIN`
 - Booster officers pre-seeded: Donna Fischer (President), Tina Erickson (Secretary), Susan Carroll (Orchestra Representative)
 
+## Vercel + Neon Setup (one-time)
+
+1. Create a Neon project at neon.tech and copy the connection string.
+2. In Vercel project settings → Environment Variables, add:
+   - `DATABASE_URL` — your Neon connection string
+   - `ADMIN_PASSWORD` — `NCHSORCHESTRAADMIN` (or custom)
+3. Create tables: set `DATABASE_URL` locally then run `pnpm --filter @workspace/db run push`
+4. Seed initial data from JSON files: `pnpm --filter @workspace/scripts run seed-db`
+5. Deploy: push to GitHub and Vercel auto-deploys.
+
 ## Gotchas
 
-- After editing data via the admin panel locally, commit and push the updated `public/data/*.json` files so Vercel picks up the changes.
-- The admin panel uses the generated API client hooks (calls `/api/*`), which only work when the local API server is running. On Vercel, admin mutations will not work — admin is for local use only.
-- `DATA_DIR` env var overrides the default JSON data directory path in the API server (useful if running the server from a non-standard location).
+- The local Express server (`api-server`) and the Vercel serverless functions (`api/`) are two separate implementations of the same API contract. Edits via admin locally update JSON files; edits on Vercel update the Neon DB.
+- The `api/` serverless functions require `DATABASE_URL` env var. If not set, they throw a clear error.
+- `DATA_DIR` env var overrides the default JSON data directory path in the local API server.
 
 ## Pointers
 

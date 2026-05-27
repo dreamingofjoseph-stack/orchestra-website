@@ -3,12 +3,12 @@ import { motion } from "framer-motion";
 import { Clock, MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { useStaticConcerts } from "@/lib/useData";
+import { useListConcerts } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Concerts() {
   const [filter, setFilter] = useState("");
-  const { data: concerts = [], isLoading } = useStaticConcerts();
+  const { data: concerts = [], isLoading } = useListConcerts();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());

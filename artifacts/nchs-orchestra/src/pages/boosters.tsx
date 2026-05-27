@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 import { Heart, Mail, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStaticBoosters, useStaticBoosterOfficers } from "@/lib/useData";
+import { useListBoosters, useListBoosterOfficers } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Boosters() {
-  const { data: boosters = [], isLoading: boostersLoading } = useStaticBoosters();
-  const { data: officers = [], isLoading: officersLoading } = useStaticBoosterOfficers();
+  const { data: boosters = [], isLoading: boostersLoading } = useListBoosters();
+  const { data: officers = [], isLoading: officersLoading } = useListBoosterOfficers();
 
   const sortedBoosters = [...(boosters as any[])].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
   const sortedOfficers = [...(officers as any[])].sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));

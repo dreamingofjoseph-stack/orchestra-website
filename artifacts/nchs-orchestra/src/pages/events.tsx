@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useStaticEvents } from "@/lib/useData";
+import { useListEvents } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Events() {
   const [filter, setFilter] = useState("");
-  const { data: events = [], isLoading } = useStaticEvents();
+  const { data: events = [], isLoading } = useListEvents();
 
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => setFilter(e.detail.toLowerCase());

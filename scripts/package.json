@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",
+    "seed-db": "tsx ./src/seed-db.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
