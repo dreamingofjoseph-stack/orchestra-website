@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AdminPanel } from "@/components/admin-panel";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,8 +26,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Basic client-side filtering via context or custom event could be implemented,
-  // but for a static layout, we'll just dispatch an event so child components can react
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("search-query", { detail: searchQuery }));
   }, [searchQuery]);
@@ -77,11 +78,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger className="px-4 py-2 rounded-md text-sm font-medium text-foreground/80 hover:bg-muted hover:text-foreground transition-colors flex items-center gap-1 outline-none">
                 More <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-card border-border shadow-lg">
+              <DropdownMenuContent align="end" className="w-52 bg-card border-border shadow-lg">
                 <DropdownMenuItem asChild>
                   <Link href="/board" className="w-full cursor-pointer">
                     Orchestra Board & Leaders
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/boosters" className="w-full cursor-pointer">
+                    Boosters & Fundraisers
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer flex items-center gap-2 text-muted-foreground"
+                  onSelect={() => setIsAdminOpen(true)}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  Edit Site
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -152,6 +166,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           &copy; {new Date().getFullYear()} NCHS Orchestra. All rights reserved.
         </div>
       </footer>
+
+      <AdminPanel open={isAdminOpen} onOpenChange={setIsAdminOpen} />
     </div>
   );
 }
