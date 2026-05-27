@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Milo Tobin",
+    "role": "President",
+    "bio": "",
+    "imageUrl": "",
+    "sortOrder": 0,
+    "createdAt": "2026-05-27T05:32:22.924Z",
+    "updatedAt": "2026-05-27T05:32:22.924Z"
+  }
+]
