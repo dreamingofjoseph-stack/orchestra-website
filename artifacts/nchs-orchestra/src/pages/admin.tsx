@@ -18,6 +18,36 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+type TimePeriod = "AM" | "PM";
+
+function splitTimeValue(value: string): { clock: string; period: TimePeriod } {
+  const normalized = String(value || "").trim();
+  const twelveHourMatch = normalized.match(/^(.+?)\s*(am|pm)$/i);
+
+  if (twelveHourMatch) {
+    return {
+      clock: twelveHourMatch[1].trim(),
+      period: twelveHourMatch[2].toUpperCase() as TimePeriod,
+    };
+  }
+
+  const twentyFourHourMatch = normalized.match(/^(\d{1,2})(?::(\d{2}))?$/);
+  if (twentyFourHourMatch) {
+    const hours = Number(twentyFourHourMatch[1]);
+    const minutes = twentyFourHourMatch[2] || "00";
+    return {
+      clock: `${hours % 12 || 12}:${minutes}`,
+      period: hours >= 12 ? "PM" : "AM",
+    };
+  }
+
+  return { clock: normalized, period: "PM" };
+}
+
+function formatTimeValue(clock: string, period: TimePeriod) {
+  return `${clock.trim()} ${period}`;
+}
+
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem("adminKey"));
   const [password, setPassword] = useState("");
@@ -114,17 +144,18 @@ function ConcertsAdmin() {
   const [editingId, setEditingId] = useState<number | null>(null);
   
   const [formData, setFormData] = useState({
-    title: "", date: "", time: "", venue: "", description: "", status: "upcoming", imageUrl: ""
+    title: "", date: "", time: "", timePeriod: "PM" as TimePeriod, venue: "", description: "", status: "upcoming", imageUrl: ""
   });
 
   const resetForm = () => {
-    setFormData({ title: "", date: "", time: "", venue: "", description: "", status: "upcoming", imageUrl: "" });
+    setFormData({ title: "", date: "", time: "", timePeriod: "PM", venue: "", description: "", status: "upcoming", imageUrl: "" });
     setEditingId(null);
   };
 
   const handleOpenEdit = (item: any) => {
+    const parsedTime = splitTimeValue(item.time);
     setFormData({ 
-      title: item.title, date: item.date, time: item.time, venue: item.venue, 
+      title: item.title, date: item.date, time: parsedTime.clock, timePeriod: parsedTime.period, venue: item.venue, 
       description: item.description || "", status: item.status || "upcoming", imageUrl: item.imageUrl || "" 
     });
     setEditingId(item.id);
@@ -133,10 +164,11 @@ function ConcertsAdmin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = { ...formData, time: formatTimeValue(formData.time, formData.timePeriod) };
     if (editingId) {
-      await adminFetch(`/api/concerts/${editingId}`, { method: "PATCH", body: JSON.stringify(formData) });
+      await adminFetch(`/api/concerts/${editingId}`, { method: "PATCH", body: JSON.stringify(payload) });
     } else {
-      await adminFetch("/api/concerts", { method: "POST", body: JSON.stringify(formData) });
+      await adminFetch("/api/concerts", { method: "POST", body: JSON.stringify(payload) });
     }
     queryClient.invalidateQueries({ queryKey: getListConcertsQueryKey() });
     setOpen(false);
@@ -172,7 +204,16 @@ function ConcertsAdmin() {
                 </div>
                 <div className="space-y-2">
                   <Label>Time</Label>
-                  <Input required value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
+                  <div className="flex gap-2">
+                    <Input required placeholder="7:00" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
+                    <Select value={formData.timePeriod} onValueChange={(value: TimePeriod) => setFormData({...formData, timePeriod: value})}>
+                      <SelectTrigger className="w-[5.5rem]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AM">AM</SelectItem>
+                        <SelectItem value="PM">PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Venue</Label>
@@ -326,17 +367,18 @@ function EventsAdmin() {
   const [editingId, setEditingId] = useState<number | null>(null);
   
   const [formData, setFormData] = useState({
-    title: "", date: "", time: "", description: "", category: "", imageUrl: ""
+    title: "", date: "", time: "", timePeriod: "PM" as TimePeriod, description: "", category: "", imageUrl: ""
   });
 
   const resetForm = () => {
-    setFormData({ title: "", date: "", time: "", description: "", category: "", imageUrl: "" });
+    setFormData({ title: "", date: "", time: "", timePeriod: "PM", description: "", category: "", imageUrl: "" });
     setEditingId(null);
   };
 
   const handleOpenEdit = (item: any) => {
+    const parsedTime = splitTimeValue(item.time);
     setFormData({ 
-      title: item.title, date: item.date, time: item.time, 
+      title: item.title, date: item.date, time: parsedTime.clock, timePeriod: parsedTime.period, 
       description: item.description || "", category: item.category || "", imageUrl: item.imageUrl || "" 
     });
     setEditingId(item.id);
@@ -345,10 +387,11 @@ function EventsAdmin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = { ...formData, time: formatTimeValue(formData.time, formData.timePeriod) };
     if (editingId) {
-      await adminFetch(`/api/events/${editingId}`, { method: "PATCH", body: JSON.stringify(formData) });
+      await adminFetch(`/api/events/${editingId}`, { method: "PATCH", body: JSON.stringify(payload) });
     } else {
-      await adminFetch("/api/events", { method: "POST", body: JSON.stringify(formData) });
+      await adminFetch("/api/events", { method: "POST", body: JSON.stringify(payload) });
     }
     queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
     setOpen(false);
@@ -384,7 +427,16 @@ function EventsAdmin() {
                 </div>
                 <div className="space-y-2">
                   <Label>Time</Label>
-                  <Input required value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
+                  <div className="flex gap-2">
+                    <Input required placeholder="7:00" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
+                    <Select value={formData.timePeriod} onValueChange={(value: TimePeriod) => setFormData({...formData, timePeriod: value})}>
+                      <SelectTrigger className="w-[5.5rem]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AM">AM</SelectItem>
+                        <SelectItem value="PM">PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-2 col-span-2">
                   <Label>Category</Label>
