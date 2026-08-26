@@ -32,9 +32,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const navLinks = [
     { label: "Home", href: "/" },
-    { label: "Concerts", href: "/concerts" },
+    { label: "Concerts & Events", href: "/concerts" },
     { label: "Concert Programs", href: "/concert-programs" },
-    { label: "Events", href: "/events" },
     { label: "Opportunities", href: "/opportunities" },
   ];
 
@@ -147,8 +146,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div>
             <h4 className="font-bold mb-4 font-serif text-accent">Quick Links</h4>
             <ul className="space-y-2 text-sm text-secondary-foreground/70">
-              <li><Link href="/concerts" className="hover:text-white transition-colors">Upcoming Concerts</Link></li>
-              <li><Link href="/events" className="hover:text-white transition-colors">Calendar</Link></li>
+               <li><Link href="/concerts" className="hover:text-white transition-colors">Concerts & events</Link></li>
               <li><Link href="/opportunities" className="hover:text-white transition-colors">Student Opportunities</Link></li>
             </ul>
           </div>

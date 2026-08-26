@@ -77,50 +77,50 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 270 20% 98%;
-  --foreground: 270 40% 12%;
+  --background: 270 24% 97%;
+  --foreground: 268 35% 16%;
 
-  --border: 270 15% 82%;
+  --border: 270 16% 84%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 270 40% 12%;
-  --card-border: 270 15% 82%;
+  --card: 270 25% 99%;
+  --card-foreground: 268 35% 16%;
+  --card-border: 270 16% 84%;
 
-  --sidebar: 270 20% 96%;
-  --sidebar-foreground: 270 40% 12%;
-  --sidebar-border: 270 15% 82%;
-  --sidebar-primary: 270 65% 30%;
+  --sidebar: 270 25% 96%;
+  --sidebar-foreground: 268 35% 16%;
+  --sidebar-border: 270 16% 84%;
+  --sidebar-primary: 271 48% 34%;
   --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 270 15% 88%;
-  --sidebar-accent-foreground: 270 40% 12%;
-  --sidebar-ring: 270 10% 70%;
+  --sidebar-accent: 270 18% 89%;
+  --sidebar-accent-foreground: 268 35% 16%;
+  --sidebar-ring: 271 32% 64%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 270 40% 12%;
-  --popover-border: 270 15% 82%;
+  --popover: 270 25% 99%;
+  --popover-foreground: 268 35% 16%;
+  --popover-border: 270 16% 84%;
 
-  --primary: 270 65% 30%; /* Deep Purple */
+  --primary: 271 48% 34%; /* Orchestra plum */
   --primary-foreground: 0 0% 98%;
 
-  --secondary: 270 50% 20%; /* Darker Purple */
+  --secondary: 270 34% 22%; /* Velvet purple */
   --secondary-foreground: 0 0% 98%;
 
-  --muted: 270 15% 90%;
-  --muted-foreground: 270 15% 45%;
+  --muted: 270 19% 92%;
+  --muted-foreground: 268 13% 47%;
 
-  --accent: 240 5% 72%; /* Silver */
-  --accent-foreground: 270 40% 12%;
+  --accent: 240 8% 67%; /* Brushed silver */
+  --accent-foreground: 268 35% 16%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 270 15% 82%;
-  --ring: 270 55% 50%;
-  --chart-1: 270 65% 30%;
-  --chart-2: 270 50% 20%;
-  --chart-3: 240 5% 72%;
-  --chart-4: 270 55% 45%;
-  --chart-5: 270 30% 55%;
+  --input: 270 16% 84%;
+  --ring: 271 48% 48%;
+  --chart-1: 271 48% 34%;
+  --chart-2: 270 34% 22%;
+  --chart-3: 240 8% 67%;
+  --chart-4: 271 42% 48%;
+  --chart-5: 270 25% 58%;
 
   --app-font-sans: 'DM Sans', sans-serif;
   --app-font-serif: 'Playfair Display', serif;
@@ -163,7 +163,7 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 270 35% 8%;
+  --background: 270 30% 9%;
   --foreground: 270 10% 95%;
 
   --border: 270 25% 20%;
@@ -338,4 +338,73 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+}
+
+@keyframes calendar-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes velvet-sheen {
+  from { transform: translateX(-115%); }
+  to { transform: translateX(115%); }
+}
+
+.schedule-page {
+  background:
+    radial-gradient(circle at 8% 4%, hsl(271 48% 34% / .08), transparent 27rem),
+    radial-gradient(circle at 92% 18%, hsl(240 8% 67% / .14), transparent 24rem);
+}
+
+.schedule-hero {
+  background:
+    linear-gradient(115deg, hsl(270 34% 22%) 0%, hsl(271 48% 34%) 58%, hsl(270 31% 27%) 100%);
+  box-shadow: 0 20px 55px hsl(270 34% 22% / .18);
+}
+
+.schedule-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .14;
+  background-image: repeating-linear-gradient(0deg, transparent 0 19px, hsl(240 8% 84% / .3) 20px 21px);
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent);
+}
+
+.schedule-reveal {
+  animation: calendar-rise .5s ease both;
+}
+
+.schedule-date-button {
+  transition: transform .18s ease, background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+.schedule-date-button:hover {
+  transform: translateY(-2px);
+}
+
+.schedule-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.schedule-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -40%;
+  width: 35%;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, hsl(0 0% 100% / .16), transparent);
+  animation: velvet-sheen 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.staff-mark {
+  background-image: repeating-linear-gradient(0deg, hsl(240 8% 67% / .22) 0 1px, transparent 1px 7px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .schedule-reveal, .schedule-sheen::after { animation: none; }
+  .schedule-date-button { transition: none; }
 }
