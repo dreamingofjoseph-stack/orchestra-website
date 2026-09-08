@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListConcerts, getListConcertsQueryKey,
@@ -19,11 +19,72 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LogOut, Lock } from "lucide-react";
+import { CalendarDays, LogOut, Lock, Music2 } from "lucide-react";
 
 interface AdminPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+type TimePeriod = "AM" | "PM";
+type CalendarKind = "concert" | "event";
+
+type CalendarFormData = {
+  kind: CalendarKind;
+  title: string;
+  date: string;
+  time: string;
+  timePeriod: TimePeriod;
+  venue: string;
+  description: string;
+  status: string;
+  category: string;
+  imageUrl: string;
+};
+
+type CalendarAdminItem = CalendarFormData & { id: number };
+
+function splitTimeValue(value: string): { clock: string; period: TimePeriod } {
+  const normalized = String(value || "").trim();
+  const twelveHourMatch = normalized.match(/^(.+?)\s*(am|pm)$/i);
+
+  if (twelveHourMatch) {
+    return {
+      clock: twelveHourMatch[1].trim(),
+      period: twelveHourMatch[2].toUpperCase() as TimePeriod,
+    };
+  }
+
+  const twentyFourHourMatch = normalized.match(/^(\d{1,2})(?::(\d{2}))?$/);
+  if (twentyFourHourMatch) {
+    const hours = Number(twentyFourHourMatch[1]);
+    const minutes = twentyFourHourMatch[2] || "00";
+    return {
+      clock: `${hours % 12 || 12}:${minutes}`,
+      period: hours >= 12 ? "PM" : "AM",
+    };
+  }
+
+  return { clock: normalized, period: "PM" };
+}
+
+function formatTimeValue(clock: string, period: TimePeriod) {
+  return `${clock.trim()} ${period}`;
+}
+
+function createEmptyCalendarForm(kind: CalendarKind = "concert"): CalendarFormData {
+  return {
+    kind,
+    title: "",
+    date: "",
+    time: "",
+    timePeriod: "PM",
+    venue: "",
+    description: "",
+    status: "upcoming",
+    category: "",
+    imageUrl: "",
+  };
 }
 
 export function AdminPanel({ open, onOpenChange }: AdminPanelProps) {
@@ -120,8 +181,9 @@ export function AdminPanel({ open, onOpenChange }: AdminPanelProps) {
         ) : (
           <ScrollArea className="flex-1">
             <div className="p-6">
-              <Tabs defaultValue="concerts">
+              <Tabs defaultValue="calendar">
                 <TabsList className="mb-6 flex-wrap h-auto gap-1">
+                  <TabsTrigger value="calendar">Calendar</TabsTrigger>
                   <TabsTrigger value="concerts">Concerts</TabsTrigger>
                   <TabsTrigger value="programs">Programs</TabsTrigger>
                   <TabsTrigger value="events">Events</TabsTrigger>
@@ -130,6 +192,7 @@ export function AdminPanel({ open, onOpenChange }: AdminPanelProps) {
                   <TabsTrigger value="boosters">Boosters</TabsTrigger>
                   <TabsTrigger value="officers">Officers</TabsTrigger>
                 </TabsList>
+                <TabsContent value="calendar"><CalendarAdmin /></TabsContent>
                 <TabsContent value="concerts"><ConcertsAdmin /></TabsContent>
                 <TabsContent value="programs"><ProgramsAdmin /></TabsContent>
                 <TabsContent value="events"><EventsAdmin /></TabsContent>
@@ -146,23 +209,231 @@ export function AdminPanel({ open, onOpenChange }: AdminPanelProps) {
   );
 }
 
+function CalendarAdmin() {
+  const { data: concerts = [] } = useListConcerts();
+  const { data: events = [] } = useListEvents();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<{ kind: CalendarKind; id: number } | null>(null);
+  const [formData, setFormData] = useState<CalendarFormData>(() => createEmptyCalendarForm());
+  const [formError, setFormError] = useState("");
+
+  const items = useMemo<CalendarAdminItem[]>(
+    () => [
+      ...concerts.map((item: any) => ({
+        ...createEmptyCalendarForm("concert"),
+        kind: "concert" as const,
+        id: item.id,
+        title: item.title,
+        date: item.date,
+        time: item.time,
+        venue: item.venue || "",
+        description: item.description || "",
+        status: item.status || "upcoming",
+        imageUrl: item.imageUrl || "",
+      })),
+      ...events.map((item: any) => ({
+        ...createEmptyCalendarForm("event"),
+        kind: "event" as const,
+        id: item.id,
+        title: item.title,
+        date: item.date,
+        time: item.time,
+        description: item.description || "",
+        category: item.category || "",
+        imageUrl: item.imageUrl || "",
+      })),
+    ].sort((a, b) => {
+      const dateOrder = String(a.date).localeCompare(String(b.date));
+      if (dateOrder !== 0) return dateOrder;
+      const timeOrder = String(a.time).localeCompare(String(b.time));
+      if (timeOrder !== 0) return timeOrder;
+      if (a.kind !== b.kind) return a.kind === "concert" ? -1 : 1;
+      return a.id - b.id;
+    }),
+    [concerts, events],
+  );
+
+  const resetForm = (kind: CalendarKind = "concert") => {
+    setFormData(createEmptyCalendarForm(kind));
+    setEditing(null);
+    setFormError("");
+  };
+
+  const handleOpenCreate = (kind: CalendarKind) => {
+    resetForm(kind);
+    setOpen(true);
+  };
+
+  const handleOpenEdit = (item: CalendarAdminItem) => {
+    const parsedTime = splitTimeValue(item.time);
+    setFormData({ ...item, time: parsedTime.clock, timePeriod: parsedTime.period });
+    setEditing({ kind: item.kind, id: item.id });
+    setFormError("");
+    setOpen(true);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!formData.time.trim()) {
+      setFormError("Please enter a time.");
+      return;
+    }
+
+    const payload = formData.kind === "concert"
+      ? {
+          title: formData.title,
+          date: formData.date,
+          time: formatTimeValue(formData.time, formData.timePeriod),
+          venue: formData.venue,
+          description: formData.description,
+          status: formData.status,
+          imageUrl: formData.imageUrl || null,
+        }
+      : {
+          title: formData.title,
+          date: formData.date,
+          time: formatTimeValue(formData.time, formData.timePeriod),
+          description: formData.description,
+          category: formData.category,
+          imageUrl: formData.imageUrl || null,
+        };
+
+    try {
+      const basePath = formData.kind === "concert" ? "/api/concerts" : "/api/events";
+      const url = editing ? `${basePath}/${editing.id}` : basePath;
+      const response = await adminFetch(url, {
+        method: editing ? "PATCH" : "POST",
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error("The schedule item could not be saved.");
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getListConcertsQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() }),
+      ]);
+      setOpen(false);
+      resetForm();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "The schedule item could not be saved.");
+    }
+  };
+
+  const handleDelete = async (item: CalendarAdminItem) => {
+    if (!confirm(`Delete this ${item.kind}?`)) return;
+
+    const response = await adminFetch(`/api/${item.kind === "concert" ? "concerts" : "events"}/${item.id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) return;
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: getListConcertsQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() }),
+    ]);
+  };
+
+  return (
+    <div>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-lg font-bold">Combined calendar</h2>
+          <p className="text-sm text-muted-foreground">Manage concerts and orchestra events in date order.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => handleOpenCreate("event")}>New event</Button>
+          <Button size="sm" onClick={() => handleOpenCreate("concert")}>New concert</Button>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border bg-card">
+        {items.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">No calendar items yet.</p>}
+        {items.map((item) => (
+          <div key={`${item.kind}-${item.id}`} className="flex items-center justify-between gap-3 border-b p-3 last:border-0">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className={`mt-0.5 rounded-full p-2 ${item.kind === "concert" ? "bg-primary/10 text-primary" : "bg-accent/25 text-primary"}`}>
+                {item.kind === "concert" ? <Music2 className="h-4 w-4" /> : <CalendarDays className="h-4 w-4" />}
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-medium">{item.title}</p>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{item.kind}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {item.date} · {item.time}{item.venue ? ` · ${item.venue}` : item.category ? ` · ${item.category}` : ""}
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 gap-1">
+              <Button variant="outline" size="sm" onClick={() => handleOpenEdit(item)}>Edit</Button>
+              <Button variant="destructive" size="sm" onClick={() => handleDelete(item)}>Del</Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Dialog open={open} onOpenChange={(value) => { setOpen(value); if (!value) resetForm(); }}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>{editing ? "Edit" : "Add"} {formData.kind === "concert" ? "Concert" : "Event"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 space-y-1"><Label>Title</Label><Input required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} /></div>
+              <div className="space-y-1"><Label>Date (YYYY-MM-DD)</Label><Input required value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} /></div>
+              <div className="space-y-1">
+                <Label>Time</Label>
+                <div className="flex gap-2">
+                  <Input required placeholder="7:00" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+                  <Select value={formData.timePeriod} onValueChange={(value: TimePeriod) => setFormData({ ...formData, timePeriod: value })}>
+                    <SelectTrigger className="w-[5.5rem]"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="AM">AM</SelectItem><SelectItem value="PM">PM</SelectItem></SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {formData.kind === "concert" ? (
+                <>
+                  <div className="col-span-2 space-y-1"><Label>Venue</Label><Input required value={formData.venue} onChange={(e) => setFormData({ ...formData, venue: e.target.value })} /></div>
+                  <div className="col-span-2 space-y-1">
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="upcoming">Upcoming</SelectItem><SelectItem value="past">Past</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                </>
+              ) : (
+                <div className="col-span-2 space-y-1"><Label>Category</Label><Input required placeholder="e.g. Rehearsal" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} /></div>
+              )}
+              <div className="col-span-2 space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
+              <div className="col-span-2 space-y-1"><Label>Description</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></div>
+            </div>
+            {formError && <p className="text-sm font-medium text-destructive">{formError}</p>}
+            <Button type="submit" className="w-full">Save</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 function ConcertsAdmin() {
   const { data: items = [] } = useListConcerts();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
-    title: "", date: "", time: "", venue: "", description: "", status: "upcoming", imageUrl: "",
+    title: "", date: "", time: "", timePeriod: "PM" as TimePeriod, venue: "", description: "", status: "upcoming", imageUrl: "",
   });
 
   const resetForm = () => {
-    setFormData({ title: "", date: "", time: "", venue: "", description: "", status: "upcoming", imageUrl: "" });
+    setFormData({ title: "", date: "", time: "", timePeriod: "PM", venue: "", description: "", status: "upcoming", imageUrl: "" });
     setEditingId(null);
   };
 
   const handleOpenEdit = (item: any) => {
+    const parsedTime = splitTimeValue(item.time);
     setFormData({
-      title: item.title, date: item.date, time: item.time, venue: item.venue,
+      title: item.title, date: item.date, time: parsedTime.clock, timePeriod: parsedTime.period, venue: item.venue,
       description: item.description || "", status: item.status || "upcoming", imageUrl: item.imageUrl || "",
     });
     setEditingId(item.id);
@@ -171,10 +442,11 @@ function ConcertsAdmin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = { ...formData, time: formatTimeValue(formData.time, formData.timePeriod) };
     if (editingId) {
-      await adminFetch(`/api/concerts/${editingId}`, { method: "PATCH", body: JSON.stringify(formData) });
+      await adminFetch(`/api/concerts/${editingId}`, { method: "PATCH", body: JSON.stringify(payload) });
     } else {
-      await adminFetch("/api/concerts", { method: "POST", body: JSON.stringify(formData) });
+      await adminFetch("/api/concerts", { method: "POST", body: JSON.stringify(payload) });
     }
     queryClient.invalidateQueries({ queryKey: getListConcertsQueryKey() });
     setOpen(false);
@@ -200,7 +472,16 @@ function ConcertsAdmin() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1"><Label>Title</Label><Input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Date (YYYY-MM-DD)</Label><Input required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Time</Label><Input required value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} /></div>
+                <div className="space-y-1">
+                  <Label>Time</Label>
+                  <div className="flex gap-2">
+                    <Input required placeholder="7:00" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} />
+                    <Select value={formData.timePeriod} onValueChange={(value: TimePeriod) => setFormData({ ...formData, timePeriod: value })}>
+                      <SelectTrigger className="w-[5.5rem]"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="AM">AM</SelectItem><SelectItem value="PM">PM</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="space-y-1"><Label>Venue</Label><Input required value={formData.venue} onChange={e => setFormData({ ...formData, venue: e.target.value })} /></div>
                 <div className="space-y-1 col-span-2"><Label>Status</Label>
                   <Select value={formData.status} onValueChange={v => setFormData({ ...formData, status: v })}>
@@ -292,19 +573,21 @@ function EventsAdmin() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ title: "", date: "", time: "", description: "", category: "", imageUrl: "" });
+  const [formData, setFormData] = useState({ title: "", date: "", time: "", timePeriod: "PM" as TimePeriod, description: "", category: "", imageUrl: "" });
 
-  const resetForm = () => { setFormData({ title: "", date: "", time: "", description: "", category: "", imageUrl: "" }); setEditingId(null); };
+  const resetForm = () => { setFormData({ title: "", date: "", time: "", timePeriod: "PM", description: "", category: "", imageUrl: "" }); setEditingId(null); };
 
   const handleOpenEdit = (item: any) => {
-    setFormData({ title: item.title, date: item.date, time: item.time, description: item.description || "", category: item.category || "", imageUrl: item.imageUrl || "" });
+    const parsedTime = splitTimeValue(item.time);
+    setFormData({ title: item.title, date: item.date, time: parsedTime.clock, timePeriod: parsedTime.period, description: item.description || "", category: item.category || "", imageUrl: item.imageUrl || "" });
     setEditingId(item.id); setOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) { await adminFetch(`/api/events/${editingId}`, { method: "PATCH", body: JSON.stringify(formData) }); }
-    else { await adminFetch("/api/events", { method: "POST", body: JSON.stringify(formData) }); }
+    const payload = { ...formData, time: formatTimeValue(formData.time, formData.timePeriod) };
+    if (editingId) { await adminFetch(`/api/events/${editingId}`, { method: "PATCH", body: JSON.stringify(payload) }); }
+    else { await adminFetch("/api/events", { method: "POST", body: JSON.stringify(payload) }); }
     queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
     setOpen(false); resetForm();
   };
@@ -325,7 +608,16 @@ function EventsAdmin() {
               <div className="space-y-1"><Label>Title</Label><Input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1"><Label>Date</Label><Input required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Time</Label><Input required value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} /></div>
+                <div className="space-y-1">
+                  <Label>Time</Label>
+                  <div className="flex gap-2">
+                    <Input required placeholder="7:00" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} />
+                    <Select value={formData.timePeriod} onValueChange={(value: TimePeriod) => setFormData({ ...formData, timePeriod: value })}>
+                      <SelectTrigger className="w-[5.5rem]"><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="AM">AM</SelectItem><SelectItem value="PM">PM</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
               <div className="space-y-1"><Label>Category</Label><Input required value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} placeholder="e.g. Rehearsal" /></div>
               <div className="space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} /></div>

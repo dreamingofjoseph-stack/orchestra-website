@@ -3,11 +3,9 @@ import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   CalendarDays,
-  Check,
   ChevronLeft,
   ChevronRight,
   Clock3,
-  Download,
   Info,
   MapPin,
   Music2,
@@ -187,7 +185,6 @@ export default function Concerts() {
   const [filter, setFilter] = useState("");
   const [selectedKey, setSelectedKey] = useState("");
   const [monthCursor, setMonthCursor] = useState(() => new Date());
-  const [downloaded, setDownloaded] = useState(false);
   const concertsQuery = useListConcerts();
   const eventsQuery = useListEvents();
 
@@ -289,12 +286,6 @@ export default function Concerts() {
   const visibleEvents = filteredItems.filter((item) => item.kind === "event");
   const pastCount = allItems.filter((item) => item.dateObject && item.dateObject < startOfToday()).length;
 
-  const handleFullDownload = () => {
-    downloadIcs(allItems, "nchs-orchestra-schedule.ics");
-    setDownloaded(true);
-    window.setTimeout(() => setDownloaded(false), 3500);
-  };
-
   const shiftMonth = (amount: number) => {
     setMonthCursor((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
   };
@@ -329,18 +320,6 @@ export default function Concerts() {
               <p className="mt-6 max-w-xl text-base leading-7 text-primary-foreground/75 md:text-lg">
                 One dependable place for every rehearsal, audition, and performance. Concerts are the moments that matter most; everything else helps us get there.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button
-                  type="button"
-                  onClick={handleFullDownload}
-                  className="schedule-sheen h-12 gap-2 rounded-full bg-[hsl(var(--accent))] px-5 text-[hsl(var(--secondary))] hover:bg-[hsl(var(--accent)/.88)]"
-                  data-testid="button-download-full-schedule"
-                >
-                  {downloaded ? <Check className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                  {downloaded ? "Calendar file ready" : "Copy to Google Calendar"}
-                </Button>
-                <span className="max-w-[17rem] text-xs leading-5 text-primary-foreground/55">Downloads every concert and event as a standard .ics file for Google Calendar.</span>
-              </div>
             </div>
 
             <div className="staff-mark relative rounded-2xl border border-primary-foreground/15 bg-primary-foreground/[.06] p-5 backdrop-blur-sm md:p-6" data-testid="card-next-concert">
@@ -548,13 +527,6 @@ export default function Concerts() {
           )}
         </section>
 
-        <aside className="mt-16 flex flex-col gap-4 rounded-2xl border border-[hsl(var(--accent)/.45)] bg-[hsl(var(--accent)/.13)] p-6 md:flex-row md:items-center md:justify-between md:p-7" data-testid="calendar-import-help">
-          <div className="flex items-start gap-4">
-            <div className="rounded-full bg-card p-2.5 text-primary shadow-sm"><Download className="h-5 w-5" /></div>
-            <div><h2 className="font-serif text-xl text-primary">Take the season with you.</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Download the complete schedule, then open Google Calendar → Settings → Import & export → Import. Choose the .ics file and your family calendar.</p></div>
-          </div>
-          <Button type="button" onClick={handleFullDownload} variant="outline" className="shrink-0 gap-2 border-primary/25 bg-card text-primary hover:bg-card/70" data-testid="button-download-footer-schedule"><Download className="h-4 w-4" /> Get .ics file</Button>
-        </aside>
       </main>
     </div>
   );
