@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListConcerts, getListConcertsQueryKey,
-  useListPrograms, getListProgramsQueryKey,
   useListEvents, getListEventsQueryKey,
   useListOpportunities, getListOpportunitiesQueryKey,
   useListBoardMembers, getListBoardMembersQueryKey,
@@ -19,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AdminImageUpload } from "@/components/admin-image-upload";
 import { CalendarDays, LogOut, Lock, Music2 } from "lucide-react";
 
 interface AdminPanelProps {
@@ -184,18 +184,12 @@ export function AdminPanel({ open, onOpenChange }: AdminPanelProps) {
               <Tabs defaultValue="calendar">
                 <TabsList className="mb-6 flex-wrap h-auto gap-1">
                   <TabsTrigger value="calendar">Calendar</TabsTrigger>
-                  <TabsTrigger value="concerts">Concerts</TabsTrigger>
-                  <TabsTrigger value="programs">Programs</TabsTrigger>
-                  <TabsTrigger value="events">Events</TabsTrigger>
                   <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
                   <TabsTrigger value="board">Board</TabsTrigger>
                   <TabsTrigger value="boosters">Boosters</TabsTrigger>
                   <TabsTrigger value="officers">Officers</TabsTrigger>
                 </TabsList>
                 <TabsContent value="calendar"><CalendarAdmin /></TabsContent>
-                <TabsContent value="concerts"><ConcertsAdmin /></TabsContent>
-                <TabsContent value="programs"><ProgramsAdmin /></TabsContent>
-                <TabsContent value="events"><EventsAdmin /></TabsContent>
                 <TabsContent value="opportunities"><OpportunitiesAdmin /></TabsContent>
                 <TabsContent value="board"><BoardAdmin /></TabsContent>
                 <TabsContent value="boosters"><BoostersAdmin /></TabsContent>
@@ -404,7 +398,7 @@ function CalendarAdmin() {
               ) : (
                 <div className="col-span-2 space-y-1"><Label>Category</Label><Input required placeholder="e.g. Rehearsal" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} /></div>
               )}
-              <div className="col-span-2 space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
+              <div className="col-span-2 space-y-1"><Label>Image (optional)</Label><AdminImageUpload value={formData.imageUrl} onChange={(imageUrl) => setFormData({ ...formData, imageUrl })} /></div>
               <div className="col-span-2 space-y-1"><Label>Description</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></div>
             </div>
             {formError && <p className="text-sm font-medium text-destructive">{formError}</p>}
@@ -489,7 +483,7 @@ function ConcertsAdmin() {
                     <SelectContent><SelectItem value="upcoming">Upcoming</SelectItem><SelectItem value="past">Past</SelectItem></SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1 col-span-2"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
+                <div className="space-y-1 col-span-2"><Label>Image (optional)</Label><AdminImageUpload value={formData.imageUrl} onChange={(imageUrl) => setFormData({ ...formData, imageUrl })} /></div>
                 <div className="space-y-1 col-span-2"><Label>Description</Label><Textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
               </div>
               <Button type="submit" className="w-full">Save</Button>
@@ -502,64 +496,6 @@ function ConcertsAdmin() {
         {items.map(item => (
           <div key={item.id} className="p-3 border-b last:border-0 flex items-center justify-between gap-2">
             <div className="min-w-0"><p className="font-medium text-sm truncate">{item.title}</p><p className="text-xs text-muted-foreground">{item.date} · {item.venue}</p></div>
-            <div className="flex gap-1 flex-shrink-0"><Button variant="outline" size="sm" onClick={() => handleOpenEdit(item)}>Edit</Button><Button variant="destructive" size="sm" onClick={() => handleDelete(item.id)}>Del</Button></div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProgramsAdmin() {
-  const { data: items = [] } = useListPrograms();
-  const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ title: "", date: "", description: "", fileUrl: "", imageUrl: "" });
-
-  const resetForm = () => { setFormData({ title: "", date: "", description: "", fileUrl: "", imageUrl: "" }); setEditingId(null); };
-
-  const handleOpenEdit = (item: any) => {
-    setFormData({ title: item.title, date: item.date, description: item.description || "", fileUrl: item.fileUrl || "", imageUrl: item.imageUrl || "" });
-    setEditingId(item.id); setOpen(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) { await adminFetch(`/api/programs/${editingId}`, { method: "PATCH", body: JSON.stringify(formData) }); }
-    else { await adminFetch("/api/programs", { method: "POST", body: JSON.stringify(formData) }); }
-    queryClient.invalidateQueries({ queryKey: getListProgramsQueryKey() });
-    setOpen(false); resetForm();
-  };
-
-  const handleDelete = async (id: number) => {
-    if (confirm("Delete this program?")) { await adminFetch(`/api/programs/${id}`, { method: "DELETE" }); queryClient.invalidateQueries({ queryKey: getListProgramsQueryKey() }); }
-  };
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold">Programs</h2>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
-          <DialogTrigger asChild><Button size="sm">Add Program</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{editingId ? "Edit" : "Add"} Program</DialogTitle></DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="space-y-1"><Label>Title</Label><Input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Date</Label><Input required value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Program PDF URL (optional)</Label><Input value={formData.fileUrl} onChange={e => setFormData({ ...formData, fileUrl: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Description</Label><Textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
-              <Button type="submit" className="w-full">Save</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <div className="border rounded-lg bg-card">
-        {items.length === 0 && <p className="p-6 text-center text-muted-foreground text-sm">No programs yet.</p>}
-        {items.map(item => (
-          <div key={item.id} className="p-3 border-b last:border-0 flex items-center justify-between gap-2">
-            <div className="min-w-0"><p className="font-medium text-sm truncate">{item.title}</p><p className="text-xs text-muted-foreground">{item.date}</p></div>
             <div className="flex gap-1 flex-shrink-0"><Button variant="outline" size="sm" onClick={() => handleOpenEdit(item)}>Edit</Button><Button variant="destructive" size="sm" onClick={() => handleDelete(item.id)}>Del</Button></div>
           </div>
         ))}
@@ -620,7 +556,7 @@ function EventsAdmin() {
                 </div>
               </div>
               <div className="space-y-1"><Label>Category</Label><Input required value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} placeholder="e.g. Rehearsal" /></div>
-              <div className="space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
+              <div className="space-y-1"><Label>Image (optional)</Label><AdminImageUpload value={formData.imageUrl} onChange={(imageUrl) => setFormData({ ...formData, imageUrl })} /></div>
               <div className="space-y-1"><Label>Description</Label><Textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
               <Button type="submit" className="w-full">Save</Button>
             </form>
@@ -678,7 +614,7 @@ function OpportunitiesAdmin() {
               <div className="space-y-1"><Label>Title</Label><Input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} /></div>
               <div className="space-y-1"><Label>Deadline (optional)</Label><Input value={formData.deadline} onChange={e => setFormData({ ...formData, deadline: e.target.value })} /></div>
               <div className="space-y-1"><Label>Link (optional)</Label><Input value={formData.link} onChange={e => setFormData({ ...formData, link: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
+              <div className="space-y-1"><Label>Image (optional)</Label><AdminImageUpload value={formData.imageUrl} onChange={(imageUrl) => setFormData({ ...formData, imageUrl })} /></div>
               <div className="space-y-1"><Label>Description</Label><Textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
               <Button type="submit" className="w-full">Save</Button>
             </form>
@@ -739,7 +675,7 @@ function BoardAdmin() {
               <div className="space-y-1"><Label>Name</Label><Input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} /></div>
               <div className="space-y-1"><Label>Role</Label><Input required value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} /></div>
               <div className="space-y-1"><Label>Sort Order</Label><Input type="number" value={formData.sortOrder} onChange={e => setFormData({ ...formData, sortOrder: Number(e.target.value) })} /></div>
-              <div className="space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
+              <div className="space-y-1"><Label>Image (optional)</Label><AdminImageUpload value={formData.imageUrl} onChange={(imageUrl) => setFormData({ ...formData, imageUrl })} /></div>
               <div className="space-y-1"><Label>Bio</Label><Textarea value={formData.bio} onChange={e => setFormData({ ...formData, bio: e.target.value })} /></div>
               <Button type="submit" className="w-full">Save</Button>
             </form>
@@ -860,7 +796,7 @@ function BoostersAdmin() {
               <div className="space-y-1"><Label>Title</Label><Input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} /></div>
               <div className="space-y-1"><Label>Type (e.g. donation, fundraiser)</Label><Input required value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} /></div>
               <div className="space-y-1"><Label>Sort Order</Label><Input type="number" value={formData.sortOrder} onChange={e => setFormData({ ...formData, sortOrder: Number(e.target.value) })} /></div>
-              <div className="space-y-1"><Label>Image URL (optional)</Label><Input value={formData.imageUrl} onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} /></div>
+              <div className="space-y-1"><Label>Image (optional)</Label><AdminImageUpload value={formData.imageUrl} onChange={(imageUrl) => setFormData({ ...formData, imageUrl })} /></div>
               <div className="space-y-1"><Label>Description</Label><Textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
               <Button type="submit" className="w-full">Save</Button>
             </form>

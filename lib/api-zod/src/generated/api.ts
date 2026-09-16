@@ -30,6 +30,44 @@ export const AdminLoginResponse = zod.object({
 
 
 /**
+ * @summary Request a presigned URL for an image upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+
+
+
+
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+})
+
+
+/**
+ * @summary Serve an uploaded image
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+
+/**
  * @summary List all concerts
  */
 export const ListConcertsResponseItem = zod.object({

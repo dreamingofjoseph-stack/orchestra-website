@@ -7,7 +7,6 @@ import { Layout } from "@/components/layout";
 
 import Home from "@/pages/home";
 import Concerts from "@/pages/concerts";
-import ConcertPrograms from "@/pages/concert-programs";
 import Events from "@/pages/events";
 import Opportunities from "@/pages/opportunities";
 import Board from "@/pages/board";
@@ -21,7 +20,6 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/concerts" component={Concerts} />
-        <Route path="/concert-programs" component={ConcertPrograms} />
         <Route path="/events" component={Events} />
         <Route path="/opportunities" component={Opportunities} />
         <Route path="/board" component={Board} />

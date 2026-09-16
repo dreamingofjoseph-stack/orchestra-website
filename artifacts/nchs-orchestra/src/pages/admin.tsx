@@ -10,6 +10,7 @@ import {
   useListBoosterOfficers, getListBoosterOfficersQueryKey
 } from "@workspace/api-client-react";
 import { adminFetch } from "@/lib/adminFetch";
+import { AdminImageUpload } from "@/components/admin-image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -116,7 +117,6 @@ export default function Admin() {
         <Tabs defaultValue="concerts">
           <TabsList className="mb-8">
             <TabsTrigger value="concerts">Concerts</TabsTrigger>
-            <TabsTrigger value="programs">Programs</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
             <TabsTrigger value="board">Board Members</TabsTrigger>
@@ -125,7 +125,6 @@ export default function Admin() {
           </TabsList>
 
           <TabsContent value="concerts"><ConcertsAdmin /></TabsContent>
-          <TabsContent value="programs"><ProgramsAdmin /></TabsContent>
           <TabsContent value="events"><EventsAdmin /></TabsContent>
           <TabsContent value="opportunities"><OpportunitiesAdmin /></TabsContent>
           <TabsContent value="board"><BoardAdmin /></TabsContent>
@@ -220,8 +219,8 @@ function ConcertsAdmin() {
                   <Input required value={formData.venue} onChange={e => setFormData({...formData, venue: e.target.value})} />
                 </div>
                 <div className="space-y-2 col-span-2">
-                  <Label>Image URL (optional)</Label>
-                  <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+                  <Label>Image (optional)</Label>
+                  <AdminImageUpload value={formData.imageUrl} onChange={imageUrl => setFormData({...formData, imageUrl})} />
                 </div>
                 <div className="space-y-2 col-span-2">
                   <Label>Status</Label>
@@ -329,8 +328,8 @@ function ProgramsAdmin() {
                 <Input value={formData.fileUrl} onChange={e => setFormData({...formData, fileUrl: e.target.value})} />
               </div>
               <div className="space-y-2">
-                <Label>Image URL (optional)</Label>
-                <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+                <Label>Image (optional)</Label>
+                <AdminImageUpload value={formData.imageUrl} onChange={imageUrl => setFormData({...formData, imageUrl})} />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
@@ -443,8 +442,8 @@ function EventsAdmin() {
                   <Input required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} placeholder="e.g. Rehearsal" />
                 </div>
                 <div className="space-y-2 col-span-2">
-                  <Label>Image URL (optional)</Label>
-                  <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+                  <Label>Image (optional)</Label>
+                  <AdminImageUpload value={formData.imageUrl} onChange={imageUrl => setFormData({...formData, imageUrl})} />
                 </div>
                 <div className="space-y-2 col-span-2">
                   <Label>Description</Label>
@@ -542,8 +541,8 @@ function OpportunitiesAdmin() {
                 <Input value={formData.link} onChange={e => setFormData({...formData, link: e.target.value})} />
               </div>
               <div className="space-y-2">
-                <Label>Image URL (optional)</Label>
-                <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+                <Label>Image (optional)</Label>
+                <AdminImageUpload value={formData.imageUrl} onChange={imageUrl => setFormData({...formData, imageUrl})} />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
@@ -642,10 +641,10 @@ function BoardAdmin() {
                 <Label>Sort Order</Label>
                 <Input type="number" value={formData.sortOrder} onChange={e => setFormData({...formData, sortOrder: Number(e.target.value)})} />
               </div>
-              <div className="space-y-2">
-                <Label>Image URL (optional)</Label>
-                <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
-              </div>
+                <div className="space-y-2">
+                  <Label>Image (optional)</Label>
+                  <AdminImageUpload value={formData.imageUrl} onChange={imageUrl => setFormData({...formData, imageUrl})} />
+                </div>
               <div className="space-y-2">
                 <Label>Bio</Label>
                 <Textarea value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
@@ -838,8 +837,8 @@ function BoostersAdmin() {
                 <Input type="number" value={formData.sortOrder} onChange={e => setFormData({...formData, sortOrder: Number(e.target.value)})} />
               </div>
               <div className="space-y-2">
-                <Label>Image URL (optional)</Label>
-                <Input value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+                <Label>Image (optional)</Label>
+                <AdminImageUpload value={formData.imageUrl} onChange={imageUrl => setFormData({...formData, imageUrl})} />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>

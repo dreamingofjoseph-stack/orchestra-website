@@ -30,3 +30,5 @@ export * from './opportunityUpdate';
 export * from './program';
 export * from './programInput';
 export * from './programUpdate';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';

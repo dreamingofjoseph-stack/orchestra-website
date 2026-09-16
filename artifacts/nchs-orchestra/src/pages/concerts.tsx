@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowUpRight,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -460,7 +459,6 @@ export default function Concerts() {
               <p className="mb-2 text-xs font-semibold uppercase tracking-[.2em] text-primary">Center stage</p>
               <h2 className="font-serif text-3xl font-medium text-primary md:text-4xl">Concerts & performances</h2>
             </div>
-            <Link href="/concert-programs" className="hidden items-center gap-1 text-sm font-semibold text-primary hover:underline sm:flex" data-testid="link-concert-programs">Programs <ArrowUpRight className="h-4 w-4" /></Link>
           </div>
           {isLoading ? (
             <div className="grid gap-5 md:grid-cols-2">
@@ -486,7 +484,6 @@ export default function Concerts() {
                     {item.description && <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">{item.description}</p>}
                     <div className="mt-6 flex items-center gap-3">
                       {item.status !== "past" && <ItemCalendarButton item={item} />}
-                      {item.status === "past" && <Link href="/concert-programs" className="inline-flex h-9 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary" data-testid={`link-program-${item.id}`}>View program <ArrowUpRight className="h-4 w-4" /></Link>}
                     </div>
                   </div>
                 </motion.article>

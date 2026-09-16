@@ -33,7 +33,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Concerts & Events", href: "/concerts" },
-    { label: "Concert Programs", href: "/concert-programs" },
     { label: "Opportunities", href: "/opportunities" },
   ];
 
