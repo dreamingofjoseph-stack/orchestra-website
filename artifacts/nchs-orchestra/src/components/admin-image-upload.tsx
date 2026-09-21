@@ -41,11 +41,14 @@ export function AdminImageUpload({ value, onChange }: AdminImageUploadProps) {
         throw new Error(uploadData.error || "Could not prepare the image upload.");
       }
 
-      const uploadResponse = await fetch(uploadData.uploadURL, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type },
-      });
+       const uploadResponse = await adminFetch("/api/storage/uploads/upload", {
+         method: "POST",
+         body: file,
+         headers: {
+           "Content-Type": file.type,
+           "X-Object-Path": uploadData.objectPath,
+         },
+       });
       if (!uploadResponse.ok) throw new Error("Could not upload the image.");
 
       onChange(`/api/storage${uploadData.objectPath}`);

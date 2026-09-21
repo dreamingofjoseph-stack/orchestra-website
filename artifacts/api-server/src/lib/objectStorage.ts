@@ -59,6 +59,36 @@ export class ObjectStorageService {
     return file;
   }
 
+  async getObjectEntityURL(objectPath: string): Promise<string> {
+    if (!objectPath.startsWith("/objects/")) throw new ObjectNotFoundError();
+    const objectName = objectPath.slice("/objects/".length);
+    const { bucketName } = parseObjectPath(`${this.getPrivateObjectDir()}/${objectName}`);
+    return signObjectUrl(bucketName, objectName, "GET", 900);
+  }
+
+  async uploadObjectEntity(
+    objectPath: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    if (!/^\/objects\/uploads\/[^/]+$/.test(objectPath)) {
+      throw new ObjectNotFoundError();
+    }
+
+    const objectName = objectPath.slice("/objects/".length);
+    const { bucketName } = parseObjectPath(`${this.getPrivateObjectDir()}/${objectName}`);
+    const uploadURL = await signObjectUrl(bucketName, objectName, "PUT", 900);
+    const response = await fetch(uploadURL, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body,
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to upload object (${response.status})`);
+    }
+  }
+
   async downloadObject(file: File): Promise<Response> {
     const [metadata] = await file.getMetadata();
     const stream = Readable.toWeb(file.createReadStream()) as ReadableStream;
