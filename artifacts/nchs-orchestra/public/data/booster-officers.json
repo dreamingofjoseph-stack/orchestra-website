@@ -1,12 +1,12 @@
 [
   {
     "id": 1,
-    "name": "Donna Fischer",
+    "name": "Mike Tangen",
     "role": "President",
-    "email": "doncaree55@gmail.com",
+    "email": "mjtangen@msn.com",
     "sortOrder": 0,
     "createdAt": "2026-05-26T23:13:34.062Z",
-    "updatedAt": "2026-05-26T23:13:34.062Z"
+    "updatedAt": "2026-09-21T22:26:37.510Z"
   },
   {
     "id": 2,
@@ -16,14 +16,5 @@
     "sortOrder": 1,
     "createdAt": "2026-05-26T23:13:34.124Z",
     "updatedAt": "2026-05-26T23:13:34.124Z"
-  },
-  {
-    "id": 3,
-    "name": "Susan Carroll",
-    "role": "Orchestra Representative",
-    "email": "susan@beshie.com",
-    "sortOrder": 2,
-    "createdAt": "2026-05-26T23:13:34.181Z",
-    "updatedAt": "2026-05-26T23:13:34.181Z"
   }
 ]
