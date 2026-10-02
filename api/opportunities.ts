@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSql, camel, nullish } from "./_db";
 import { setCors, requireAdmin } from "./_auth";
+import { validateBody, opportunitySchema } from "./_validate";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -16,8 +17,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "POST") {
       if (!requireAdmin(req, res)) return;
-      const { title, description = "", deadline, link, imageUrl } = req.body ?? {};
-      if (!title) return res.status(400).json({ error: "Missing required fields" });
+      const v = validateBody(req.body, opportunitySchema, "create");
+      if (!v.ok) return res.status(400).json({ error: v.error });
+      const { title, description = "", deadline, link, imageUrl } = v.data as Record<string, any>;
       const rows = await sql`
         INSERT INTO opportunities (title, description, deadline, link, image_url)
         VALUES (${title}, ${description}, ${nullish(deadline)}, ${nullish(link)}, ${nullish(imageUrl)})

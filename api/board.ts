@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSql, camel, nullish } from "./_db";
 import { setCors, requireAdmin } from "./_auth";
+import { validateBody, boardMemberSchema } from "./_validate";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -16,8 +17,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "POST") {
       if (!requireAdmin(req, res)) return;
-      const { name, role, bio = "", imageUrl, sortOrder = 0 } = req.body ?? {};
-      if (!name || !role) return res.status(400).json({ error: "Missing required fields" });
+      const v = validateBody(req.body, boardMemberSchema, "create");
+      if (!v.ok) return res.status(400).json({ error: v.error });
+      const { name, role, bio = "", imageUrl, sortOrder = 0 } = v.data as Record<string, any>;
       const rows = await sql`
         INSERT INTO board_members (name, role, bio, image_url, sort_order)
         VALUES (${name}, ${role}, ${bio}, ${nullish(imageUrl)}, ${Number(sortOrder)})

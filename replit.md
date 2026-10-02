@@ -54,7 +54,7 @@ A public-facing multi-page school orchestra website with a CMS admin panel for m
 ## User preferences
 
 - Purple/silver theme throughout
-- Admin password: `NCHSORCHESTRAADMIN`
+- Admin password: set via the `ADMIN_PASSWORD` environment variable (never commit it; use Replit Secrets locally and Vercel Environment Variables in production)
 - Booster officers pre-seeded: Donna Fischer (President), Tina Erickson (Secretary), Susan Carroll (Orchestra Representative)
 
 ## Vercel + Neon Setup (one-time)
@@ -62,7 +62,8 @@ A public-facing multi-page school orchestra website with a CMS admin panel for m
 1. Create a Neon project at neon.tech and copy the connection string.
 2. In Vercel project settings → Environment Variables, add:
    - `DATABASE_URL` — your Neon connection string
-   - `ADMIN_PASSWORD` — `NCHSORCHESTRAADMIN` (or custom)
+   - `ADMIN_PASSWORD` — **required.** Choose a long, unique password. If it is missing, all admin endpoints return 503 and nothing can be edited.
+   - `ALLOWED_ORIGINS` — optional, comma-separated list of extra origins allowed to call the API cross-origin (e.g. `https://example.org`). Not needed when the site and API share a domain, which is the default on Vercel.
 3. Create tables: set `DATABASE_URL` locally then run `pnpm --filter @workspace/db run push`
 4. Seed initial data from JSON files: `pnpm --filter @workspace/scripts run seed-db`
 5. Deploy: push to GitHub and Vercel auto-deploys.

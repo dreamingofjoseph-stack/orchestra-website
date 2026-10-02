@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSql, camel, nullish } from "./_db";
 import { setCors, requireAdmin } from "./_auth";
+import { validateBody, concertSchema } from "./_validate";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -16,10 +17,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "POST") {
       if (!requireAdmin(req, res)) return;
-      const { title, date, time, venue, description, status = "upcoming", imageUrl } = req.body ?? {};
-      if (!title || !date || !time || !venue || !description) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
+      const v = validateBody(req.body, concertSchema, "create");
+      if (!v.ok) return res.status(400).json({ error: v.error });
+      const { title, date, time, venue, description, status = "upcoming", imageUrl } = v.data as Record<string, any>;
       const rows = await sql`
         INSERT INTO concerts (title, date, time, venue, description, status, image_url)
         VALUES (${title}, ${date}, ${time}, ${venue}, ${description}, ${status}, ${nullish(imageUrl)})

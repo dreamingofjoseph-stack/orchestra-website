@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSql, camel, nullish } from "../_db";
 import { setCors, requireAdmin } from "../_auth";
+import { validateBody, programSchema } from "../_validate";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -14,7 +15,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "PATCH") {
       if (!requireAdmin(req, res)) return;
-      const { title, date, description, fileUrl, imageUrl } = req.body ?? {};
+      const v = validateBody(req.body, programSchema, "update");
+      if (!v.ok) return res.status(400).json({ error: v.error });
+      const { title, date, description, fileUrl, imageUrl } = v.data as Record<string, any>;
       const rows = await sql`
         UPDATE programs SET
           title = COALESCE(${title ?? null}::text, title),

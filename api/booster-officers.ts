@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSql, camel } from "./_db";
 import { setCors, requireAdmin } from "./_auth";
+import { validateBody, boosterOfficerSchema } from "./_validate";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -16,8 +17,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "POST") {
       if (!requireAdmin(req, res)) return;
-      const { name, role, email, sortOrder = 0 } = req.body ?? {};
-      if (!name || !role || !email) return res.status(400).json({ error: "Missing required fields" });
+      const v = validateBody(req.body, boosterOfficerSchema, "create");
+      if (!v.ok) return res.status(400).json({ error: v.error });
+      const { name, role, email, sortOrder = 0 } = v.data as Record<string, any>;
       const rows = await sql`
         INSERT INTO booster_officers (name, role, email, sort_order)
         VALUES (${name}, ${role}, ${email}, ${Number(sortOrder)})

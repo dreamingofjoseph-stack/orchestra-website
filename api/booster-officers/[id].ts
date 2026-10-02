@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getSql, camel } from "../_db";
 import { setCors, requireAdmin } from "../_auth";
+import { validateBody, boosterOfficerSchema } from "../_validate";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -14,7 +15,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "PATCH") {
       if (!requireAdmin(req, res)) return;
-      const { name, role, email, sortOrder } = req.body ?? {};
+      const v = validateBody(req.body, boosterOfficerSchema, "update");
+      if (!v.ok) return res.status(400).json({ error: v.error });
+      const { name, role, email, sortOrder } = v.data as Record<string, any>;
       const rows = await sql`
         UPDATE booster_officers SET
           name = COALESCE(${name ?? null}::text, name),
